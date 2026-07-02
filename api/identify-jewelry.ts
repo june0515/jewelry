@@ -1,0 +1,114 @@
+const categories = ['项链','耳环','戒指','手链','手表','胸针','脚链','其他'];
+const materials = ['925银','18K金','14K金','铂金','珍珠','钻石','天然石','合金','玫瑰金','其他'];
+const occasions = ['日常','通勤','正式','约会','派对','旅行'];
+const statuses = ['常戴','收藏','需保养','已遗失','想转卖'];
+
+function cleanList(values: unknown, allowed?: string[]) {
+  if (!Array.isArray(values)) return [];
+  return values
+    .filter((value): value is string => typeof value === 'string')
+    .map(value => value.trim())
+    .filter(Boolean)
+    .filter(value => !allowed || allowed.includes(value));
+}
+
+function pick(value: unknown, allowed: string[], fallback: string) {
+  return typeof value === 'string' && allowed.includes(value) ? value : fallback;
+}
+
+function readText(value: unknown) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+export default async function handler(req: any, res: any) {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: '只支持 POST 请求' });
+    return;
+  }
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    res.status(500).json({ error: '缺少 OPENAI_API_KEY，请先在部署平台添加环境变量' });
+    return;
+  }
+
+  const image = req.body?.image;
+  if (typeof image !== 'string' || !image.startsWith('data:image/')) {
+    res.status(400).json({ error: '请上传一张首饰照片后再识别' });
+    return;
+  }
+
+  const openaiResponse = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: process.env.OPENAI_MODEL || 'gpt-5.5',
+      input: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'input_text',
+              text: [
+                '识别这张首饰照片，给个人首饰管理 app 生成可编辑建议。',
+                `category 只能选：${categories.join('、')}`,
+                `materials 只能选：${materials.join('、')}`,
+                `occasions 只能选：${occasions.join('、')}`,
+                `status 只能选：${statuses.join('、')}`,
+                '如果无法确认品牌，请留空。note 用中文简短描述可见款式、形状、宝石、颜色或保养提醒。',
+              ].join('\n'),
+            },
+            { type: 'input_image', image_url: image },
+          ],
+        },
+      ],
+      text: {
+        format: {
+          type: 'json_schema',
+          name: 'jewelry_identification',
+          strict: true,
+          schema: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              name: { type: 'string' },
+              brand: { type: 'string' },
+              category: { type: 'string', enum: categories },
+              materials: { type: 'array', items: { type: 'string', enum: materials } },
+              colors: { type: 'array', items: { type: 'string' } },
+              occasions: { type: 'array', items: { type: 'string', enum: occasions } },
+              status: { type: 'string', enum: statuses },
+              note: { type: 'string' },
+            },
+            required: ['name','brand','category','materials','colors','occasions','status','note'],
+          },
+        },
+      },
+    }),
+  });
+
+  const payload = await openaiResponse.json();
+  if (!openaiResponse.ok) {
+    res.status(openaiResponse.status).json({ error: payload?.error?.message || 'AI 识别服务暂时不可用' });
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(payload.output_text || '{}');
+    res.status(200).json({
+      name: readText(parsed.name),
+      brand: readText(parsed.brand),
+      category: pick(parsed.category, categories, '其他'),
+      materials: cleanList(parsed.materials, materials),
+      colors: cleanList(parsed.colors),
+      occasions: cleanList(parsed.occasions, occasions),
+      status: pick(parsed.status, statuses, '常戴'),
+      note: readText(parsed.note),
+    });
+  } catch {
+    res.status(502).json({ error: 'AI 返回内容无法解析，请再试一次' });
+  }
+}
