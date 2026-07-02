@@ -2,6 +2,7 @@
   "name": "jewelry-wardrobe-pwa",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "pnpm@11.7.0",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc && vite build",
