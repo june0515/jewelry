@@ -14,6 +14,8 @@ export interface JewelryItem {
   purchaseSource?: string;
   purchaseDate?: string;
   purchasePrice?: number;
+  referencePrice?: number;
+  referenceUrl?: string;
   occasions: JewelryOccasion[];
   wearCount: number;
   lastWornDate?: string;
