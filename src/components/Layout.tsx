@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { Gem, Home, Palette, PlusCircle, Search, Sparkles, Watch } from 'lucide-react';
+import { BarChart3, CalendarDays, Gem, Heart, Home, Palette, PlusCircle, Search, Settings, Sparkles, Watch } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '../i18n';
 
@@ -24,8 +24,12 @@ export function Layout(){
       <nav>
         <NavLink to="/"><Home size={18}/>{t('home')}</NavLink>
         <NavLink to="/items"><Gem size={18}/>{t('allJewelry')}</NavLink>
-        <NavLink to="/watches"><Watch size={18}/>{t('watches')}</NavLink>
         <NavLink to="/new"><PlusCircle size={18}/>{t('addJewelry')}</NavLink>
+        <NavLink to="/wear-history"><CalendarDays size={18}/>{t('wearHistory')}</NavLink>
+        <NavLink to="/wishlist"><Heart size={18}/>{t('wishlist')}</NavLink>
+        <NavLink to="/analytics"><BarChart3 size={18}/>{t('analytics')}</NavLink>
+        <NavLink to="/watches"><Watch size={18}/>{t('watches')}</NavLink>
+        <NavLink to="/settings"><Settings size={18}/>{t('settings')}</NavLink>
       </nav>
       <div className="theme-panel">
         <div><Palette size={16}/>{t('themeColor')}</div>

@@ -7,5 +7,5 @@ export function ImageUploader({photos,onChange}:{photos:string[];onChange:(v:str
     const imgs = await Promise.all(Array.from(files).map(f=>compressImage(f)));
     onChange([...photos, ...imgs]);
   }
-  return <div><label className="upload"><input type="file" accept="image/*" multiple onChange={e=>handle(e.target.files)}/>{t('uploadPhotos')}</label><div className="thumbs">{photos.map((p,i)=><button type="button" key={i} onClick={()=>onChange(photos.filter((_,idx)=>idx!==i))}><img src={p}/><span>×</span></button>)}</div></div>
+  return <div><label className="upload" onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault(); handle(e.dataTransfer.files);}}><input type="file" accept="image/*" capture="environment" multiple onChange={e=>handle(e.target.files)}/><strong>{t('uploadPhotos')}</strong><span>{t('uploadHint')}</span></label><div className="thumbs">{photos.map((p,i)=><button type="button" key={i} onClick={()=>onChange(photos.filter((_,idx)=>idx!==i))}><img src={p}/>{i===0 && <em>{t('cover')}</em>}<span>×</span></button>)}</div></div>
 }

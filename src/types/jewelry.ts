@@ -8,19 +8,57 @@ export interface JewelryItem {
   photos: string[];
   name: string;
   brand?: string;
+  series?: string;
   category: JewelryCategory;
   materials: JewelryMaterial[];
+  mainStone?: string;
+  metalColor?: string;
+  size?: string;
+  weight?: number;
   colors: string[];
   purchaseSource?: string;
   purchaseDate?: string;
   purchasePrice?: number;
   referencePrice?: number;
   referenceUrl?: string;
+  invoicePhotos?: string[];
+  certificatePhotos?: string[];
   occasions: JewelryOccasion[];
   wearCount: number;
   lastWornDate?: string;
   status: JewelryStatus;
   storageLocation?: string;
+  boxName?: string;
+  trayLevel?: string;
+  compartment?: string;
+  travelCase?: boolean;
+  lastCleanedDate?: string;
+  nextCareDate?: string;
+  needsPolish?: boolean;
+  needsRepair?: boolean;
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WearEvent {
+  id: string;
+  jewelryId: string;
+  jewelryName: string;
+  brand?: string;
+  wornDate: string;
+  createdAt: string;
+}
+
+export interface WishlistItem {
+  id: string;
+  name: string;
+  brand?: string;
+  series?: string;
+  category?: JewelryCategory;
+  targetPrice?: number;
+  referenceUrl?: string;
+  photos: string[];
   note?: string;
   createdAt: string;
   updatedAt: string;
