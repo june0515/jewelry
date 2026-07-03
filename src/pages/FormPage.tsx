@@ -10,7 +10,13 @@ const categories: JewelryCategory[] = ['项链','耳环','戒指','手链','手�
 const materials: JewelryMaterial[] = ['925银','18K金','14K金','铂金','珍珠','钻石','天然石','合金','玫瑰金','其他'];
 const occasions: JewelryOccasion[] = ['日常','通勤','正式','约会','派对','旅行'];
 const statuses: JewelryStatus[] = ['常戴','收藏','需保养','已遗失','想转卖'];
-const brands = ['Cartier','Tiffany & Co.','Van Cleef & Arpels','Chanel','Dior','Bvlgari','Hermes','Pandora','Swarovski','周大福','周生生','六福珠宝','老铺黄金','其他'];
+const brands = [
+  'Cartier','Tiffany & Co.','Van Cleef & Arpels','Bvlgari','Harry Winston','Chopard','Chaumet','Boucheron','Piaget','Graff','Buccellati','Messika','Mikimoto','Tasaki','De Beers','David Yurman','Pomellato','Repossi','Fred','Qeelin',
+  'Chanel','Dior','Hermes','Louis Vuitton','Gucci','Prada','Saint Laurent','Celine','Fendi','Versace','Balenciaga','Loewe','Miu Miu','Vivienne Westwood','Alexander McQueen','Tory Burch','Kate Spade','Coach','Michael Kors','Marc Jacobs',
+  'Pandora','Swarovski','APM Monaco','Monica Vinader','Mejuri','Missoma','Ana Luisa','Astrid & Miyu','Thomas Sabo','Swarovski Created Diamonds','Tous','Swarovski Elements','Swarovski Jewelry',
+  '周大福','周生生','六福珠宝','老铺黄金','老凤祥','周六福','谢瑞麟','潮宏基','周大生','中国黄金','菜百首饰','明牌珠宝','I Do','DR钻戒','克徕帝','佐卡伊','曼卡龙','莱绅通灵','周大观','金至尊',
+  'Agete','Ahkah','Star Jewelry','4°C','Ponte Vecchio','Vendome Aoyama','J.Estina','Stonehenge','Didier Dubot','Nojess','En Route','其他'
+];
 const colors = ['金色','银色','玫瑰金','珍珠白','白色','黑色','红色','粉色','蓝色','绿色','紫色','黄色','透明','彩色','其他'];
 const purchaseSources = ['官网','品牌门店','百货专柜','买手店','电商平台','二手平台','旅行购买','礼物','传家/继承','其他'];
 const storageLocations = ['首饰盒','抽屉','梳妆台','保险柜','旅行收纳包','防尘袋','展示架','日常托盘','其他'];
