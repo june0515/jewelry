@@ -1,50 +1,52 @@
-declare const process: { env: Record<string, string | undefined> };
-
 const categories = ['项链','耳环','戒指','手链','手表','胸针','脚链','其他'];
 const materials = ['925银','18K金','14K金','铂金','珍珠','钻石','天然石','合金','玫瑰金','其他'];
 const occasions = ['日常','通勤','正式','约会','派对','旅行'];
 const statuses = ['常戴','收藏','需保养','已遗失','想转卖'];
 
-function cleanList(values: unknown, allowed?: string[]) {
+function cleanList(values, allowed) {
   if (!Array.isArray(values)) return [];
   return values
-    .filter((value): value is string => typeof value === 'string')
+    .filter(value => typeof value === 'string')
     .map(value => value.trim())
     .filter(Boolean)
     .filter(value => !allowed || allowed.includes(value));
 }
 
-function pick(value: unknown, allowed: string[], fallback: string) {
+function pick(value, allowed, fallback) {
   return typeof value === 'string' && allowed.includes(value) ? value : fallback;
 }
 
-function readText(value: unknown) {
+function readText(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-export default async function handler(req: any, res: any) {
+function sendError(res, status, error) {
+  res.status(status).json({ error });
+}
+
+module.exports = async function handler(req, res) {
   try {
     if (req.method !== 'POST') {
-      res.status(405).json({ error: '只支持 POST 请求' });
+      sendError(res, 405, '只支持 POST 请求');
       return;
     }
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
-      res.status(500).json({ error: '缺少 OPENAI_API_KEY，请先在部署平台添加环境变量' });
+      sendError(res, 500, '缺少 OPENAI_API_KEY，请先在 Vercel 的 Environment Variables 添加到 Production');
       return;
     }
 
-    const image = req.body?.image;
+    const image = req.body && req.body.image;
     if (typeof image !== 'string' || !image.startsWith('data:image/')) {
-      res.status(400).json({ error: '请上传一张首饰照片后再识别' });
+      sendError(res, 400, '请上传一张首饰照片后再识别');
       return;
     }
 
     const openaiResponse = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -94,7 +96,7 @@ export default async function handler(req: any, res: any) {
     });
 
     const responseText = await openaiResponse.text();
-    let payload: any = null;
+    let payload = null;
     try {
       payload = responseText ? JSON.parse(responseText) : null;
     } catch {
@@ -102,13 +104,18 @@ export default async function handler(req: any, res: any) {
     }
 
     if (!openaiResponse.ok) {
-      res.status(openaiResponse.status).json({
-        error: payload?.error?.message || responseText || 'AI 识别服务暂时不可用',
-      });
+      sendError(res, openaiResponse.status, (payload && payload.error && payload.error.message) || responseText || 'AI 识别服务暂时不可用');
       return;
     }
 
-    const parsed = JSON.parse(payload.output_text || '{}');
+    let parsed = {};
+    try {
+      parsed = JSON.parse((payload && payload.output_text) || '{}');
+    } catch {
+      sendError(res, 502, 'AI 返回内容无法解析，请再试一次');
+      return;
+    }
+
     res.status(200).json({
       name: readText(parsed.name),
       brand: readText(parsed.brand),
@@ -120,12 +127,7 @@ export default async function handler(req: any, res: any) {
       note: readText(parsed.note),
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : '';
-    if (message.includes('JSON')) {
-      res.status(502).json({ error: 'AI 返回内容无法解析，请再试一次' });
-      return;
-    }
     console.error('Jewelry recognition failed:', error);
-    res.status(502).json({ error: message ? `AI 识别服务请求失败：${message}` : 'AI 识别服务暂时不可用' });
+    sendError(res, 502, error && error.message ? `AI 识别服务请求失败：${error.message}` : 'AI 识别服务暂时不可用');
   }
-}
+};
