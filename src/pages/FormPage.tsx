@@ -49,6 +49,19 @@ function FormSection({title,children}:{title:string;children:ReactNode}) {
   return <section className="form-section"><h2>{title}</h2>{children}</section>;
 }
 
+function formatAiError(message: string, fallback: string) {
+  if (!message) return fallback;
+  const lower = message.toLowerCase();
+  const isEnglish = fallback.toLowerCase().startsWith('ai is');
+  if (lower.includes('quota') || lower.includes('billing') || lower.includes('credit') || lower.includes('insufficient')) {
+    return isEnglish ? `${fallback} API credits or billing are not available.` : `${fallback} 当前 API 额度或付款方式不可用。`;
+  }
+  if (lower.includes('model') || lower.includes('access') || lower.includes('permission')) {
+    return isEnglish ? `${fallback} The API key may not have access to this model.` : `${fallback} 当前 API key 可能没有模型权限。`;
+  }
+  return `${fallback} ${message}`;
+}
+
 export function FormPage(){
   const {t,label}=useI18n();
   const {id}=useParams();
@@ -93,7 +106,7 @@ export function FormPage(){
       const result = await recognizeJewelry(photo);
       setPendingAiResult(result);
     }catch(error){
-      setAiError(error instanceof Error ? error.message : t('aiFailed'));
+      setAiError(formatAiError(error instanceof Error ? error.message : '', t('aiFailed')));
     }finally{
       setRecognizing(false);
     }

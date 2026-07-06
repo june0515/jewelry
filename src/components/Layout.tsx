@@ -5,14 +5,16 @@ import { useI18n } from '../i18n';
 
 const themes = [
   { id: 'gold', label: 'themeGold' },
+  { id: 'silver', label: 'themeSilver' },
   { id: 'rose', label: 'themeRose' },
-  { id: 'emerald', label: 'themeEmerald' },
-  { id: 'sapphire', label: 'themeSapphire' },
 ] as const;
 
 export function Layout(){
   const {language,setLanguage,t}=useI18n();
-  const [theme,setTheme]=useState(() => localStorage.getItem('jewelry-theme') || 'gold');
+  const [theme,setTheme]=useState(() => {
+    const saved = localStorage.getItem('jewelry-theme');
+    return themes.some(option => option.id === saved) ? saved! : 'gold';
+  });
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem('jewelry-theme', theme);
