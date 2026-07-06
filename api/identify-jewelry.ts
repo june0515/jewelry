@@ -21,82 +21,91 @@ function readText(value: unknown) {
 }
 
 export default async function handler(req: any, res: any) {
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: '只支持 POST 请求' });
-    return;
-  }
+  try {
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: '只支持 POST 请求' });
+      return;
+    }
 
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    res.status(500).json({ error: '缺少 OPENAI_API_KEY，请先在部署平台添加环境变量' });
-    return;
-  }
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      res.status(500).json({ error: '缺少 OPENAI_API_KEY，请先在部署平台添加环境变量' });
+      return;
+    }
 
-  const image = req.body?.image;
-  if (typeof image !== 'string' || !image.startsWith('data:image/')) {
-    res.status(400).json({ error: '请上传一张首饰照片后再识别' });
-    return;
-  }
+    const image = req.body?.image;
+    if (typeof image !== 'string' || !image.startsWith('data:image/')) {
+      res.status(400).json({ error: '请上传一张首饰照片后再识别' });
+      return;
+    }
 
-  const openaiResponse = await fetch('https://api.openai.com/v1/responses', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: process.env.OPENAI_MODEL || 'gpt-5.5',
-      input: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'input_text',
-              text: [
-                '识别这张首饰照片，给个人首饰管理 app 生成可编辑建议。',
-                `category 只能选：${categories.join('、')}`,
-                `materials 只能选：${materials.join('、')}`,
-                `occasions 只能选：${occasions.join('、')}`,
-                `status 只能选：${statuses.join('、')}`,
-                '如果无法确认品牌，请留空。note 用中文简短描述可见款式、形状、宝石、颜色或保养提醒。',
-              ].join('\n'),
+    const openaiResponse = await fetch('https://api.openai.com/v1/responses', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: process.env.OPENAI_MODEL || 'gpt-5.5',
+        input: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'input_text',
+                text: [
+                  '识别这张首饰照片，给个人首饰管理 app 生成可编辑建议。',
+                  `category 只能选：${categories.join('、')}`,
+                  `materials 只能选：${materials.join('、')}`,
+                  `occasions 只能选：${occasions.join('、')}`,
+                  `status 只能选：${statuses.join('、')}`,
+                  '如果无法确认品牌，请留空。note 用中文简短描述可见款式、形状、宝石、颜色或保养提醒。',
+                ].join('\n'),
+              },
+              { type: 'input_image', image_url: image, detail: 'low' },
+            ],
+          },
+        ],
+        text: {
+          format: {
+            type: 'json_schema',
+            name: 'jewelry_identification',
+            strict: true,
+            schema: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                name: { type: 'string' },
+                brand: { type: 'string' },
+                category: { type: 'string', enum: categories },
+                materials: { type: 'array', items: { type: 'string', enum: materials } },
+                colors: { type: 'array', items: { type: 'string' } },
+                occasions: { type: 'array', items: { type: 'string', enum: occasions } },
+                status: { type: 'string', enum: statuses },
+                note: { type: 'string' },
+              },
+              required: ['name','brand','category','materials','colors','occasions','status','note'],
             },
-            { type: 'input_image', image_url: image },
-          ],
-        },
-      ],
-      text: {
-        format: {
-          type: 'json_schema',
-          name: 'jewelry_identification',
-          strict: true,
-          schema: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-              name: { type: 'string' },
-              brand: { type: 'string' },
-              category: { type: 'string', enum: categories },
-              materials: { type: 'array', items: { type: 'string', enum: materials } },
-              colors: { type: 'array', items: { type: 'string' } },
-              occasions: { type: 'array', items: { type: 'string', enum: occasions } },
-              status: { type: 'string', enum: statuses },
-              note: { type: 'string' },
-            },
-            required: ['name','brand','category','materials','colors','occasions','status','note'],
           },
         },
-      },
-    }),
-  });
+      }),
+    });
 
-  const payload = await openaiResponse.json();
-  if (!openaiResponse.ok) {
-    res.status(openaiResponse.status).json({ error: payload?.error?.message || 'AI 识别服务暂时不可用' });
-    return;
-  }
+    const responseText = await openaiResponse.text();
+    let payload: any = null;
+    try {
+      payload = responseText ? JSON.parse(responseText) : null;
+    } catch {
+      payload = null;
+    }
 
-  try {
+    if (!openaiResponse.ok) {
+      res.status(openaiResponse.status).json({
+        error: payload?.error?.message || responseText || 'AI 识别服务暂时不可用',
+      });
+      return;
+    }
+
     const parsed = JSON.parse(payload.output_text || '{}');
     res.status(200).json({
       name: readText(parsed.name),
@@ -108,7 +117,13 @@ export default async function handler(req: any, res: any) {
       status: pick(parsed.status, statuses, '常戴'),
       note: readText(parsed.note),
     });
-  } catch {
-    res.status(502).json({ error: 'AI 返回内容无法解析，请再试一次' });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    if (message.includes('JSON')) {
+      res.status(502).json({ error: 'AI 返回内容无法解析，请再试一次' });
+      return;
+    }
+    console.error('Jewelry recognition failed:', error);
+    res.status(502).json({ error: message ? `AI 识别服务请求失败：${message}` : 'AI 识别服务暂时不可用' });
   }
 }
