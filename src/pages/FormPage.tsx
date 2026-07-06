@@ -57,6 +57,8 @@ export function FormPage(){
   const [brandQuery,setBrandQuery]=useState('');
   const [recognizing,setRecognizing]=useState(false);
   const [aiError,setAiError]=useState('');
+  const [pendingAiResult,setPendingAiResult]=useState<Awaited<ReturnType<typeof recognizeJewelry>> | null>(null);
+  const [autoRecognizedPhoto,setAutoRecognizedPhoto]=useState('');
 
   useEffect(()=>{ if(id) db.jewelry.get(id).then(v=>v&&setItem({...empty,...v})); },[id]);
 
@@ -66,6 +68,13 @@ export function FormPage(){
   }, [brandQuery]);
 
   const seriesOptions = useMemo(() => getBrandSeries(item.brand), [item.brand]);
+  const firstPhoto = item.photos[0] || '';
+
+  useEffect(()=>{
+    if(id || !firstPhoto || autoRecognizedPhoto === firstPhoto) return;
+    setAutoRecognizedPhoto(firstPhoto);
+    runRecognition(firstPhoto);
+  },[autoRecognizedPhoto, firstPhoto, id]);
 
   async function submit(e:FormEvent){
     e.preventDefault();
@@ -76,29 +85,43 @@ export function FormPage(){
     nav(`/items/${saved.id}`);
   }
 
-  async function identify(){
-    const photo = item.photos[0];
+  async function runRecognition(photo: string){
     if(!photo) return;
     setRecognizing(true);
     setAiError('');
     try{
       const result = await recognizeJewelry(photo);
-      setItem(current=>({
-        ...current,
-        name: current.name || result.name || '',
-        brand: current.brand || result.brand || '',
-        category: result.category || current.category,
-        materials: result.materials?.length ? result.materials : current.materials,
-        colors: result.colors?.length ? result.colors : current.colors,
-        occasions: result.occasions?.length ? result.occasions : current.occasions,
-        status: result.status || current.status,
-        note: [current.note, result.note].filter(Boolean).join(current.note && result.note ? '\n' : ''),
-      }));
+      setPendingAiResult(result);
     }catch(error){
       setAiError(error instanceof Error ? error.message : t('aiFailed'));
     }finally{
       setRecognizing(false);
     }
+  }
+
+  function identify(){
+    const photo = item.photos[0];
+    if(photo) {
+      setAutoRecognizedPhoto(photo);
+      runRecognition(photo);
+    }
+  }
+
+  function applyRecognition(){
+    if(!pendingAiResult) return;
+    const result = pendingAiResult;
+    setItem(current=>({
+      ...current,
+      name: current.name || result.name || '',
+      brand: current.brand || result.brand || '',
+      category: result.category || current.category,
+      materials: result.materials?.length ? result.materials : current.materials,
+      colors: result.colors?.length ? result.colors : current.colors,
+      occasions: result.occasions?.length ? result.occasions : current.occasions,
+      status: result.status || current.status,
+      note: [current.note, result.note].filter(Boolean).join(current.note && result.note ? '\n' : ''),
+    }));
+    setPendingAiResult(null);
   }
 
   return <form className="form collection-form" onSubmit={submit}>
@@ -107,6 +130,15 @@ export function FormPage(){
       <ImageUploader photos={item.photos} onChange={photos=>setItem({...item,photos})}/>
       <div className="ai-panel"><div><strong>{t('aiTitle')}</strong><span>{t('aiBody')}</span></div><button type="button" className="ghost" disabled={!item.photos.length || recognizing} onClick={identify}>{recognizing?t('recognizing'):t('aiIdentify')}</button></div>
       {aiError && <div className="form-error">{aiError}</div>}
+      {pendingAiResult && <div className="ai-suggestion"><div><strong>{t('aiSuggestionTitle')}</strong><span>{t('aiSuggestionBody')}</span></div><dl>
+        {pendingAiResult.name && <><dt>{t('name')}</dt><dd>{pendingAiResult.name}</dd></>}
+        {pendingAiResult.brand && <><dt>{t('brand')}</dt><dd>{pendingAiResult.brand}</dd></>}
+        {pendingAiResult.category && <><dt>{t('category')}</dt><dd>{label(pendingAiResult.category)}</dd></>}
+        {!!pendingAiResult.materials?.length && <><dt>{t('materials')}</dt><dd>{pendingAiResult.materials.map(label).join(' / ')}</dd></>}
+        {!!pendingAiResult.colors?.length && <><dt>{t('colors')}</dt><dd>{pendingAiResult.colors.join(' / ')}</dd></>}
+        {!!pendingAiResult.occasions?.length && <><dt>{t('occasions')}</dt><dd>{pendingAiResult.occasions.map(label).join(' / ')}</dd></>}
+        {pendingAiResult.note && <><dt>{t('note')}</dt><dd>{pendingAiResult.note}</dd></>}
+      </dl><div className="ai-actions"><button type="button" className="primary" onClick={applyRecognition}>{t('applyAiSuggestion')}</button><button type="button" className="ghost" onClick={()=>setPendingAiResult(null)}>{t('dismissAiSuggestion')}</button></div></div>}
       <label>{t('name')}<input value={item.name} onChange={e=>setItem({...item,name:e.target.value})} placeholder={t('namePlaceholder')}/></label>
       <div className="brand-picker">
         <label>{t('brandSearch')}<input value={brandQuery} onChange={e=>setBrandQuery(e.target.value)} placeholder="Cartier / Van Cleef / Tiffany..."/></label>

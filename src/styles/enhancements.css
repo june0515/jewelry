@@ -268,6 +268,52 @@ nav a:hover {
   padding: 12px 14px;
 }
 
+.ai-suggestion {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+  padding: 16px;
+}
+
+.ai-suggestion > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.ai-suggestion > div:first-child span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.ai-suggestion dl {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 10px 12px;
+  margin: 0;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--panel-strong);
+}
+
+.ai-suggestion dt {
+  color: var(--muted);
+}
+
+.ai-suggestion dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ai-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .watch-band {
   display: flex;
   align-items: center;
