@@ -1,3 +1,5 @@
+declare const process: { env: Record<string, string | undefined> };
+
 const categories = ['项链','耳环','戒指','手链','手表','胸针','脚链','其他'];
 const materials = ['925银','18K金','14K金','铂金','珍珠','钻石','天然石','合金','玫瑰金','其他'];
 const occasions = ['日常','通勤','正式','约会','派对','旅行'];
