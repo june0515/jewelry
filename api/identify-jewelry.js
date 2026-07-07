@@ -34,6 +34,15 @@ function getModelName() {
   return model;
 }
 
+function getApiKey() {
+  const rawKey = process.env.OPENAI_API_KEY;
+  if (!rawKey) return '';
+
+  const compactKey = rawKey.trim().replace(/^["']|["']$/g, '').replace(/\s+/g, '');
+  const keyMatch = compactKey.match(/sk-[A-Za-z0-9_-]+/);
+  return keyMatch ? keyMatch[0] : compactKey;
+}
+
 module.exports = async function handler(req, res) {
   try {
     if (req.method !== 'POST') {
@@ -41,14 +50,14 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = getApiKey();
     if (!apiKey) {
       sendError(res, 500, '缺少 OPENAI_API_KEY，请先在 Vercel 的 Environment Variables 添加到 Production');
       return;
     }
 
-    if (!/^[\x21-\x7E]+$/.test(apiKey)) {
-      sendError(res, 500, 'OPENAI_API_KEY 格式不正确：请只粘贴 sk-proj- 开头的英文/数字 key，不要包含中文说明或空格');
+    if (!/^sk-[A-Za-z0-9_-]+$/.test(apiKey)) {
+      sendError(res, 500, 'OPENAI_API_KEY 格式不正确：请只粘贴 sk-proj- 开头的 key，或重新创建一个新的 API key');
       return;
     }
 
