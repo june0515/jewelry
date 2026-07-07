@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import { ImageUploader } from '../components/ImageUploader';
 import { WishlistItem } from '../types/jewelry';
+import { saveJewelryToCloud } from '../utils/cloudSync';
 import { useI18n } from '../i18n';
 
 const emptyWishlist: WishlistItem = {id:'',name:'',brand:'',series:'',targetPrice:undefined,referenceUrl:'',photos:[],createdAt:'',updatedAt:''};
@@ -23,10 +24,16 @@ export function WishlistPage() {
   async function convert(item: WishlistItem) {
     const now = new Date().toISOString();
     const id = crypto.randomUUID();
+    const saved = {id,photos:item.photos,name:item.name,brand:item.brand,series:item.series,category:item.category || '其他',materials:[],colors:[],occasions:[],wearCount:0,status:'收藏' as const,referencePrice:item.targetPrice,referenceUrl:item.referenceUrl,note:item.note,createdAt:now,updatedAt:now};
     await db.transaction('rw', db.wishlist, db.jewelry, async () => {
-      await db.jewelry.put({id,photos:item.photos,name:item.name,brand:item.brand,series:item.series,category:item.category || '其他',materials:[],colors:[],occasions:[],wearCount:0,status:'收藏',referencePrice:item.targetPrice,referenceUrl:item.referenceUrl,note:item.note,createdAt:now,updatedAt:now});
+      await db.jewelry.put(saved);
       await db.wishlist.delete(item.id);
     });
+    try {
+      await saveJewelryToCloud(saved);
+    } catch {
+      alert(t('cloudSyncFailed'));
+    }
   }
 
   return <section>

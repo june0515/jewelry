@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { db } from '../db/db';
 import { today } from '../utils/date';
+import { deleteJewelryFromCloud, saveJewelryToCloud } from '../utils/cloudSync';
 import { useI18n } from '../i18n';
 
 function sourceUrl(url: string) {
@@ -20,10 +21,16 @@ export function DetailPage(){
 
   async function wear(){
     const wornDate = today();
+    const updated = {...current, wearCount:current.wearCount+1, lastWornDate:wornDate, updatedAt:new Date().toISOString()};
     await db.transaction('rw', db.jewelry, db.wearEvents, async () => {
-      await db.jewelry.update(current.id,{wearCount:current.wearCount+1,lastWornDate:wornDate,updatedAt:new Date().toISOString()});
+      await db.jewelry.put(updated);
       await db.wearEvents.add({id:crypto.randomUUID(),jewelryId:current.id,jewelryName:current.name,brand:current.brand,wornDate,createdAt:new Date().toISOString()});
     });
+    try {
+      await saveJewelryToCloud(updated);
+    } catch {
+      alert(t('cloudSyncFailed'));
+    }
   }
 
   async function remove(){
@@ -32,6 +39,11 @@ export function DetailPage(){
         await db.jewelry.delete(current.id);
         await db.wearEvents.where('jewelryId').equals(current.id).delete();
       });
+      try {
+        await deleteJewelryFromCloud(current.id);
+      } catch {
+        alert(t('cloudSyncFailed'));
+      }
       nav('/items');
     }
   }

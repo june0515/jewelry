@@ -148,6 +148,7 @@ const dictionary = {
     source: '渠道',
     none: '-',
     aiFailed: 'AI 暂时不可用，可以先手动填写，之后再重新识别。',
+    cloudSyncFailed: '已保存在本机，但云端同步失败。请检查 Supabase 设置或稍后再试。',
   },
   en: {
     home: 'Home',
@@ -294,6 +295,7 @@ const dictionary = {
     source: 'Source',
     none: '-',
     aiFailed: 'AI is temporarily unavailable. You can fill this manually and retry later.',
+    cloudSyncFailed: 'Saved on this device, but cloud sync failed. Check Supabase settings or try again later.',
   },
 } as const;
 

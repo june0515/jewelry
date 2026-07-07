@@ -5,6 +5,7 @@ import { JewelryCategory, JewelryItem, JewelryMaterial, JewelryOccasion, Jewelry
 import { brandOptions, getBrandSeries } from '../data/brandData';
 import { ImageUploader } from '../components/ImageUploader';
 import { recognizeJewelry } from '../utils/aiJewelryRecognition';
+import { saveJewelryToCloud } from '../utils/cloudSync';
 import { useI18n } from '../i18n';
 
 const categories: JewelryCategory[] = ['项链','耳环','戒指','手链','手表','胸针','脚链','其他'];
@@ -95,6 +96,11 @@ export function FormPage(){
     const now = new Date().toISOString();
     const saved = {...item, id:item.id || crypto.randomUUID(), createdAt:item.createdAt || now, updatedAt:now};
     await db.jewelry.put(saved);
+    try {
+      await saveJewelryToCloud(saved);
+    } catch {
+      alert(t('cloudSyncFailed'));
+    }
     nav(`/items/${saved.id}`);
   }
 
