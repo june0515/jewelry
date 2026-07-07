@@ -43,5 +43,12 @@ export function Layout(){
       <header className="top"><div className="search"><Search size={16}/>{t('searchPlaceholder')}</div></header>
       <Outlet />
     </main>
+    <nav className="bottom-nav">
+      <NavLink to="/"><Home size={18}/><span>{t('home')}</span></NavLink>
+      <NavLink to="/items"><Gem size={18}/><span>{t('collection')}</span></NavLink>
+      <NavLink to="/new"><PlusCircle size={20}/><span>{t('add')}</span></NavLink>
+      <NavLink to="/wear-history"><CalendarDays size={18}/><span>{t('records')}</span></NavLink>
+      <NavLink to="/settings"><Settings size={18}/><span>{t('mine')}</span></NavLink>
+    </nav>
   </div>
 }

@@ -917,7 +917,230 @@ nav a:hover {
   gap: 8px;
 }
 
+.bottom-nav {
+  display: none;
+}
+
+.stepper-form {
+  gap: 18px;
+}
+
+.stepper-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.stepper-tabs button {
+  border: 1px solid var(--line-soft);
+  background: var(--panel);
+  color: var(--muted);
+  border-radius: 14px;
+  padding: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.stepper-tabs button span {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  flex: 0 0 auto;
+}
+
+.stepper-tabs button.on {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  background: linear-gradient(135deg, var(--panel), var(--panel-strong));
+  box-shadow: var(--shadow);
+}
+
+.step-card label {
+  font-weight: 750;
+  color: var(--text);
+}
+
+.step-card input,
+.step-card select,
+.step-card textarea {
+  margin-top: 7px;
+}
+
+.required-mark,
+.field-error {
+  color: #ad4c40;
+}
+
+.field-error {
+  display: block;
+  margin-top: 6px;
+  font-weight: 650;
+}
+
+.stepper-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  position: sticky;
+  bottom: 18px;
+  z-index: 5;
+  padding: 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+}
+
+.stepper-actions button {
+  min-width: 140px;
+  justify-content: center;
+}
+
+.combo-field {
+  display: grid;
+  gap: 8px;
+}
+
+.combo-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.combo-options button,
+.brand-actions button {
+  border: 1px solid var(--line);
+  background: var(--panel-strong);
+  color: var(--accent-ink);
+  border-radius: 999px;
+  padding: 7px 11px;
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.combo-options button.on,
+.combo-options .add-option,
+.brand-grid button.selected {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, var(--accent-soft), var(--panel));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-soft) 70%, transparent);
+}
+
+.brand-actions {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.refined-brand-picker .brand-grid button {
+  min-height: 58px;
+  border: 1px solid var(--line-soft);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.refined-brand-picker .brand-grid button span {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  border-radius: 999px;
+  min-width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 12px;
+}
+
+.advanced-fields {
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  background: var(--panel);
+  padding: 12px;
+}
+
+.advanced-fields summary {
+  cursor: pointer;
+  color: var(--accent-ink);
+  font-weight: 850;
+}
+
+.ai-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.detail-card h2 {
+  margin: 22px 0 10px;
+  font-size: 16px;
+  color: var(--accent-ink);
+}
+
 @media (max-width: 860px) {
+  .shell {
+    display: block;
+  }
+
+  .side {
+    display: none;
+  }
+
+  .main {
+    padding: 14px 14px 96px;
+  }
+
+  .top {
+    margin-bottom: 12px;
+  }
+
+  .bottom-nav {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    z-index: 40;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background: color-mix(in srgb, var(--panel) 92%, transparent);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(18px);
+  }
+
+  .bottom-nav a {
+    min-height: 54px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    gap: 3px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 6px 2px;
+  }
+
+  .bottom-nav a.active {
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+  }
+
   .language-switch {
     margin: 10px 0;
   }
@@ -925,16 +1148,6 @@ nav a:hover {
   .ai-panel {
     align-items: stretch;
     flex-direction: column;
-  }
-
-  nav {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  nav a {
-    min-height: 54px;
-    flex-direction: column;
-    gap: 5px;
   }
 
   .theme-panel {
@@ -968,7 +1181,35 @@ nav a:hover {
   .settings-grid,
   .collection-toolbar,
   .advanced-filters,
-  .value-strip {
+  .value-strip,
+  .stepper-tabs,
+  .ai-edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stepper-tabs button {
+    min-height: 48px;
+  }
+
+  .stepper-actions {
+    bottom: 88px;
+  }
+
+  .stepper-actions button {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .collection-form,
+  .form,
+  .form-section,
+  .form-heading {
+    border-radius: 18px;
+    padding: 16px;
+  }
+
+  .row,
+  .brand-actions {
     grid-template-columns: 1fr;
   }
 

@@ -52,18 +52,25 @@ export function DetailPage(){
     <div className="gallery">{item.photos.length ? item.photos.map((p,i)=><img key={i} src={p}/>) : <div className="placeholder">Jewelry</div>}</div>
     <div className="detail-card"><div className="detail-kicker">{item.brand || label(item.category)}</div><h1>{item.name}</h1><p>{item.series}</p><div className="chips"><span>{label(item.category)}</span><span>{label(item.status)}</span>{item.materials.map(m=><span key={m}>{label(m)}</span>)}</div>
     <div className="value-strip"><div><span>{t('price')}</span><strong>{item.purchasePrice ? `$${item.purchasePrice.toLocaleString()}` : t('none')}</strong></div><div><span>{t('marketValue')}</span><strong>{item.referencePrice ? `$${item.referencePrice.toLocaleString()}` : t('none')}</strong></div><div><span>{t('costPerWear')}</span><strong>{costPerWear ? `$${costPerWear.toFixed(2)}` : t('none')}</strong></div></div>
+    <h2>{t('jewelryPassport')}</h2>
     <dl>
       <dt>{t('series')}</dt><dd>{item.series || t('none')}</dd>
       <dt>{t('mainStone')}</dt><dd>{item.mainStone || t('none')}</dd>
       <dt>{t('metalColor')}</dt><dd>{item.metalColor || t('none')}</dd>
       <dt>{t('size')}</dt><dd>{item.size || t('none')}</dd>
       <dt>{t('colors')}</dt><dd>{item.colors.join(' / ') || t('none')}</dd>
+      <dt>{t('purchaseInfo')}</dt><dd>{item.purchaseDate || t('none')} {item.purchaseSource ? ` · ${item.purchaseSource}` : ''}</dd>
+      <dt>{t('reference')}</dt><dd>{item.referenceUrl ? <a className="detail-link" href={sourceUrl(item.referenceUrl)} target="_blank" rel="noreferrer">{t('viewSource')}</a> : t('none')}</dd>
+      <dt>{t('storageLocation')}</dt><dd>{[item.storageLocation,item.boxName,item.trayLevel,item.compartment].filter(Boolean).join(' / ') || t('none')}</dd>
+    </dl>
+    <h2>{t('wearStats')}</h2>
+    <dl>
       <dt>{t('wornTimes')}</dt><dd>{item.wearCount}</dd>
       <dt>{t('lastWorn')}</dt><dd>{item.lastWornDate || t('notRecorded')}</dd>
       <dt>{t('valueChange')}</dt><dd>{valueChange ? `${valueChange > 0 ? '+' : ''}${valueChange.toFixed(1)}%` : t('none')}</dd>
-      <dt>{t('purchase')}</dt><dd>{item.purchaseDate || t('none')} {item.purchaseSource ? ` · ${item.purchaseSource}` : ''}</dd>
-      <dt>{t('reference')}</dt><dd>{item.referenceUrl ? <a className="detail-link" href={sourceUrl(item.referenceUrl)} target="_blank" rel="noreferrer">{t('viewSource')}</a> : t('none')}</dd>
-      <dt>{t('storageLocation')}</dt><dd>{[item.storageLocation,item.boxName,item.trayLevel,item.compartment].filter(Boolean).join(' / ') || t('none')}</dd>
+    </dl>
+    <h2>{t('careRecord')}</h2>
+    <dl>
       <dt>{t('care')}</dt><dd>{[item.lastCleanedDate && `${t('lastCleanedDate')}: ${item.lastCleanedDate}`, item.nextCareDate && `${t('nextCareDate')}: ${item.nextCareDate}`, item.needsPolish && t('needsPolish'), item.needsRepair && t('needsRepair')].filter(Boolean).join(' / ') || t('none')}</dd>
       <dt>{t('note')}</dt><dd>{item.note || t('none')}</dd>
     </dl>

@@ -1,10 +1,11 @@
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { useNavigate, useParams } from 'react-router-dom';
 import { db } from '../db/db';
 import { JewelryCategory, JewelryItem, JewelryMaterial, JewelryOccasion, JewelryStatus } from '../types/jewelry';
 import { brandOptions, getBrandSeries } from '../data/brandData';
 import { ImageUploader } from '../components/ImageUploader';
-import { recognizeJewelry } from '../utils/aiJewelryRecognition';
+import { recognizeJewelry, JewelryRecognitionResult } from '../utils/aiJewelryRecognition';
 import { saveJewelryToCloud } from '../utils/cloudSync';
 import { useI18n } from '../i18n';
 
@@ -35,11 +36,29 @@ const empty: JewelryItem = {
   updatedAt:''
 };
 
+const steps = ['basicInfo','jewelryInfo','purchaseInfo','managementInfo'] as const;
+
 function toggle<T>(arr:T[], v:T){ return arr.includes(v) ? arr.filter(x=>x!==v) : [...arr, v]; }
 
-function SelectWithCustom({labelText,value,options,placeholder,onChange}:{labelText:string;value:string;options:string[];placeholder?:string;onChange:(value:string)=>void;}){
-  const isCustom = value && !options.includes(value);
-  return <label>{labelText}<select value={isCustom?'__custom':value} onChange={e=>onChange(e.target.value === '__custom' ? value : e.target.value)}><option value="">{placeholder || labelText}</option>{options.map(option=><option key={option} value={option}>{option}</option>)}{isCustom && <option value="__custom">{value}</option>}</select><input className="custom-select-input" value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder || labelText}/></label>;
+function RequiredMark() {
+  return <span className="required-mark">*</span>;
+}
+
+function SearchableCombobox({labelText,value,options,placeholder,onChange}:{labelText:string;value:string;options:string[];placeholder?:string;onChange:(value:string)=>void;}){
+  const [query,setQuery]=useState(value);
+  useEffect(()=>setQuery(value),[value]);
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return options.filter(option => !q || option.toLowerCase().includes(q)).slice(0, 8);
+  }, [options, query]);
+  const custom = query.trim() && !options.includes(query.trim());
+  return <div className="combo-field">
+    <label>{labelText}<input value={query} onChange={e=>{setQuery(e.target.value);onChange(e.target.value);}} placeholder={placeholder || labelText}/></label>
+    <div className="combo-options">
+      {filtered.map(option=><button type="button" key={option} className={value===option?'on':''} onClick={()=>{onChange(option);setQuery(option);}}>{option}</button>)}
+      {custom && <button type="button" className="add-option" onClick={()=>onChange(query.trim())}>+ {query.trim()}</button>}
+    </div>
+  </div>;
 }
 
 function MultiSelectDropdown<T extends string>({labelText,values,options,format,onChange}:{labelText:string;values:T[];options:T[];format:(value:T)=>string;onChange:(values:T[])=>void;}){
@@ -47,7 +66,7 @@ function MultiSelectDropdown<T extends string>({labelText,values,options,format,
 }
 
 function FormSection({title,children}:{title:string;children:ReactNode}) {
-  return <section className="form-section"><h2>{title}</h2>{children}</section>;
+  return <section className="form-section step-card"><h2>{title}</h2>{children}</section>;
 }
 
 function formatAiError(message: string, fallback: string) {
@@ -63,26 +82,54 @@ function formatAiError(message: string, fallback: string) {
   return `${fallback} ${message}`;
 }
 
+function editableAiResult(result: JewelryRecognitionResult): JewelryRecognitionResult {
+  return {
+    name: result.name || '',
+    brand: result.brand || '',
+    series: result.series || '',
+    category: result.category || '其他',
+    materials: result.materials || [],
+    mainStone: result.mainStone || '',
+    metalColor: result.metalColor || '',
+  };
+}
+
 export function FormPage(){
   const {t,label}=useI18n();
   const {id}=useParams();
   const nav=useNavigate();
+  const allItems = useLiveQuery(()=>db.jewelry.toArray(), []) || [];
   const [item,setItem]=useState<JewelryItem>(empty);
+  const [activeStep,setActiveStep]=useState(0);
   const [brandQuery,setBrandQuery]=useState('');
+  const [showAllBrands,setShowAllBrands]=useState(false);
   const [recognizing,setRecognizing]=useState(false);
   const [aiError,setAiError]=useState('');
-  const [pendingAiResult,setPendingAiResult]=useState<Awaited<ReturnType<typeof recognizeJewelry>> | null>(null);
+  const [pendingAiResult,setPendingAiResult]=useState<JewelryRecognitionResult | null>(null);
   const [autoRecognizedPhoto,setAutoRecognizedPhoto]=useState('');
+  const [touchedSubmit,setTouchedSubmit]=useState(false);
 
   useEffect(()=>{ if(id) db.jewelry.get(id).then(v=>v&&setItem({...empty,...v})); },[id]);
 
-  const filteredBrands = useMemo(() => {
+  const frequentBrands = useMemo(() => {
+    const counts = allItems.reduce<Record<string, number>>((acc, current) => {
+      if (current.brand) acc[current.brand] = (acc[current.brand] || 0) + 1;
+      return acc;
+    }, {});
+    const names = Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([brand])=>brand);
+    const fallback = ['Cartier','Van Cleef & Arpels','Tiffany & Co.','Chanel','Bvlgari'];
+    return [...names, ...fallback].filter((brand, index, arr)=>arr.indexOf(brand)===index).slice(0,5);
+  }, [allItems]);
+
+  const visibleBrands = useMemo(() => {
     const q = brandQuery.trim().toLowerCase();
-    return brandOptions.filter(brand => !q || brand.name.toLowerCase().includes(q)).slice(0, 12);
-  }, [brandQuery]);
+    const source = q || showAllBrands ? brandOptions.map(brand => brand.name) : frequentBrands;
+    return source.filter(brand => !q || brand.toLowerCase().includes(q)).slice(0, showAllBrands || q ? 36 : 5);
+  }, [brandQuery, frequentBrands, showAllBrands]);
 
   const seriesOptions = useMemo(() => getBrandSeries(item.brand), [item.brand]);
   const firstPhoto = item.photos[0] || '';
+  const missingName = touchedSubmit && !item.name.trim();
 
   useEffect(()=>{
     if(id || !firstPhoto || autoRecognizedPhoto === firstPhoto) return;
@@ -92,7 +139,11 @@ export function FormPage(){
 
   async function submit(e:FormEvent){
     e.preventDefault();
-    if(!item.name.trim()) return alert(t('missingName'));
+    setTouchedSubmit(true);
+    if(!item.name.trim()) {
+      setActiveStep(0);
+      return;
+    }
     const now = new Date().toISOString();
     const saved = {...item, id:item.id || crypto.randomUUID(), createdAt:item.createdAt || now, updatedAt:now};
     await db.jewelry.put(saved);
@@ -110,7 +161,7 @@ export function FormPage(){
     setAiError('');
     try{
       const result = await recognizeJewelry(photo);
-      setPendingAiResult(result);
+      setPendingAiResult(editableAiResult(result));
     }catch(error){
       setAiError(formatAiError(error instanceof Error ? error.message : '', t('aiFailed')));
     }finally{
@@ -126,6 +177,10 @@ export function FormPage(){
     }
   }
 
+  function updateAiResult(next: Partial<JewelryRecognitionResult>) {
+    setPendingAiResult(current => current ? {...current, ...next} : current);
+  }
+
   function applyRecognition(){
     if(!pendingAiResult) return;
     const result = pendingAiResult;
@@ -133,70 +188,69 @@ export function FormPage(){
       ...current,
       name: current.name || result.name || '',
       brand: current.brand || result.brand || '',
+      series: current.series || result.series || '',
       category: result.category || current.category,
       materials: result.materials?.length ? result.materials : current.materials,
-      colors: result.colors?.length ? result.colors : current.colors,
-      occasions: result.occasions?.length ? result.occasions : current.occasions,
-      status: result.status || current.status,
-      note: [current.note, result.note].filter(Boolean).join(current.note && result.note ? '\n' : ''),
+      mainStone: current.mainStone || result.mainStone || '',
+      metalColor: current.metalColor || result.metalColor || '',
     }));
     setPendingAiResult(null);
   }
 
-  return <form className="form collection-form" onSubmit={submit}>
+  return <form className="form collection-form stepper-form" onSubmit={submit}>
     <div className="form-heading"><span>{t('luxuryManager')}</span><h1>{id?t('editJewelry'):t('addJewelry')}</h1></div>
-    <FormSection title={t('basicInfo')}>
+    <div className="stepper-tabs">{steps.map((step,index)=><button type="button" key={step} className={activeStep===index?'on':''} onClick={()=>setActiveStep(index)}><span>{index+1}</span>{t(step)}</button>)}</div>
+
+    {activeStep===0 && <FormSection title={t('basicInfo')}>
       <ImageUploader photos={item.photos} onChange={photos=>setItem({...item,photos})}/>
       <div className="ai-panel"><div><strong>{t('aiTitle')}</strong><span>{t('aiBody')}</span></div><button type="button" className="ghost" disabled={!item.photos.length || recognizing} onClick={identify}>{recognizing?t('recognizing'):t('aiIdentify')}</button></div>
       {aiError && <div className="form-error">{aiError}</div>}
-      {pendingAiResult && <div className="ai-suggestion"><div><strong>{t('aiSuggestionTitle')}</strong><span>{t('aiSuggestionBody')}</span></div><dl>
-        {pendingAiResult.name && <><dt>{t('name')}</dt><dd>{pendingAiResult.name}</dd></>}
-        {pendingAiResult.brand && <><dt>{t('brand')}</dt><dd>{pendingAiResult.brand}</dd></>}
-        {pendingAiResult.category && <><dt>{t('category')}</dt><dd>{label(pendingAiResult.category)}</dd></>}
-        {!!pendingAiResult.materials?.length && <><dt>{t('materials')}</dt><dd>{pendingAiResult.materials.map(label).join(' / ')}</dd></>}
-        {!!pendingAiResult.colors?.length && <><dt>{t('colors')}</dt><dd>{pendingAiResult.colors.join(' / ')}</dd></>}
-        {!!pendingAiResult.occasions?.length && <><dt>{t('occasions')}</dt><dd>{pendingAiResult.occasions.map(label).join(' / ')}</dd></>}
-        {pendingAiResult.note && <><dt>{t('note')}</dt><dd>{pendingAiResult.note}</dd></>}
-      </dl><div className="ai-actions"><button type="button" className="primary" onClick={applyRecognition}>{t('applyAiSuggestion')}</button><button type="button" className="ghost" onClick={()=>setPendingAiResult(null)}>{t('dismissAiSuggestion')}</button></div></div>}
-      <label>{t('name')}<input value={item.name} onChange={e=>setItem({...item,name:e.target.value})} placeholder={t('namePlaceholder')}/></label>
-      <div className="brand-picker">
+      {pendingAiResult && <div className="ai-suggestion ai-editor"><div><strong>{t('aiSuggestionTitle')}</strong><span>{t('aiSuggestionBody')}</span></div>
+        <div className="ai-edit-grid">
+          <label>{t('name')}<input value={pendingAiResult.name || ''} onChange={e=>updateAiResult({name:e.target.value})}/></label>
+          <label>{t('brand')}<input value={pendingAiResult.brand || ''} onChange={e=>updateAiResult({brand:e.target.value})}/></label>
+          <label>{t('series')}<input value={pendingAiResult.series || ''} onChange={e=>updateAiResult({series:e.target.value})}/></label>
+          <label>{t('category')}<select value={pendingAiResult.category || '其他'} onChange={e=>updateAiResult({category:e.target.value as JewelryCategory})}>{categories.map(c=><option key={c} value={c}>{label(c)}</option>)}</select></label>
+          <label>{t('mainStone')}<input value={pendingAiResult.mainStone || ''} onChange={e=>updateAiResult({mainStone:e.target.value})}/></label>
+          <label>{t('metalColor')}<input value={pendingAiResult.metalColor || ''} onChange={e=>updateAiResult({metalColor:e.target.value})}/></label>
+        </div>
+        <MultiSelectDropdown labelText={t('materials')} values={(pendingAiResult.materials || []) as JewelryMaterial[]} options={materials} format={label} onChange={nextMaterials=>updateAiResult({materials:nextMaterials})}/>
+        <div className="ai-actions"><button type="button" className="primary" onClick={applyRecognition}>{t('applyAiSuggestion')}</button><button type="button" className="ghost" onClick={()=>setPendingAiResult(null)}>{t('dismissAiSuggestion')}</button></div>
+      </div>}
+      <label>{t('name')} <RequiredMark/><input value={item.name} onChange={e=>setItem({...item,name:e.target.value})} placeholder={t('namePlaceholder')} aria-invalid={missingName}/>{missingName && <small className="field-error">{t('missingName')}</small>}</label>
+      <div className="brand-picker refined-brand-picker">
         <label>{t('brandSearch')}<input value={brandQuery} onChange={e=>setBrandQuery(e.target.value)} placeholder="Cartier / Van Cleef / Tiffany..."/></label>
-        <div className="brand-grid">{filteredBrands.map(brand=><button type="button" key={brand.name} className={item.brand===brand.name?'on':''} onClick={()=>setItem({...item,brand:brand.name,series:''})}><span>{brand.logo}</span>{brand.name}</button>)}</div>
-        <input value={item.brand || ''} onChange={e=>setItem({...item,brand:e.target.value})} placeholder={t('customBrand')}/>
+        <div className="brand-grid">{visibleBrands.map(brand=><button type="button" key={brand} className={item.brand===brand?'on selected':''} onClick={()=>{setItem({...item,brand,series:''});setBrandQuery('');}}><span>{brandOptions.find(option=>option.name===brand)?.logo || brand.slice(0,2)}</span>{brand}</button>)}</div>
+        <div className="brand-actions"><button type="button" className="ghost" onClick={()=>setShowAllBrands(value=>!value)}>{showAllBrands?t('showCommonBrands'):t('viewAllBrands')}</button><input value={item.brand || ''} onChange={e=>setItem({...item,brand:e.target.value,series:''})} placeholder={t('customBrand')}/></div>
       </div>
-      <div className="row"><SelectWithCustom labelText={t('series')} value={item.series||''} options={seriesOptions} placeholder={t('series')} onChange={series=>setItem({...item,series})}/><label>{t('category')}<select value={item.category} onChange={e=>setItem({...item,category:e.target.value as JewelryCategory})}>{categories.map(c=><option key={c} value={c}>{label(c)}</option>)}</select></label></div>
+      <div className="row"><SearchableCombobox labelText={t('series')} value={item.series||''} options={seriesOptions} placeholder={item.brand ? t('seriesRecommendation') : t('series')} onChange={series=>setItem({...item,series})}/><label>{t('category')} <RequiredMark/><select value={item.category} onChange={e=>setItem({...item,category:e.target.value as JewelryCategory})}>{categories.map(c=><option key={c} value={c}>{label(c)}</option>)}</select></label></div>
       <label>{t('status')}<select value={item.status} onChange={e=>setItem({...item,status:e.target.value as JewelryStatus})}>{statuses.map(s=><option key={s} value={s}>{label(s)}</option>)}</select></label>
-    </FormSection>
+    </FormSection>}
 
-    <FormSection title={t('jewelryInfo')}>
+    {activeStep===1 && <FormSection title={t('jewelryInfo')}>
       <MultiSelectDropdown labelText={t('materials')} values={item.materials} options={materials} format={label} onChange={nextMaterials=>setItem({...item,materials:nextMaterials})}/>
-      <div className="row"><SelectWithCustom labelText={t('mainStone')} value={item.mainStone||''} options={stones} onChange={mainStone=>setItem({...item,mainStone})}/><SelectWithCustom labelText={t('metalColor')} value={item.metalColor||''} options={metalColors} onChange={metalColor=>setItem({...item,metalColor})}/></div>
+      <div className="row"><SearchableCombobox labelText={t('mainStone')} value={item.mainStone||''} options={stones} onChange={mainStone=>setItem({...item,mainStone})}/><SearchableCombobox labelText={t('metalColor')} value={item.metalColor||''} options={metalColors} onChange={metalColor=>setItem({...item,metalColor})}/></div>
       <div className="row"><label>{t('size')}<input value={item.size||''} onChange={e=>setItem({...item,size:e.target.value})} placeholder="42cm / US 6 / 16mm"/></label><label>{t('weight')}<input type="number" value={item.weight||''} onChange={e=>setItem({...item,weight:Number(e.target.value)||undefined})}/></label></div>
-      <MultiSelectDropdown labelText={t('colors')} values={item.colors} options={['金色','银色','玫瑰金','珍珠白','白色','黑色','红色','粉色','蓝色','绿色','紫色','透明','彩色','其他']} format={value=>value} onChange={nextColors=>setItem({...item,colors:nextColors})}/>
       <MultiSelectDropdown labelText={t('occasions')} values={item.occasions} options={occasions} format={label} onChange={nextOccasions=>setItem({...item,occasions:nextOccasions})}/>
-    </FormSection>
+    </FormSection>}
 
-    <FormSection title={t('purchaseInfo')}>
+    {activeStep===2 && <FormSection title={t('purchaseInfo')}>
       <div className="row"><label>{t('purchaseDate')}<input type="date" value={item.purchaseDate||''} onChange={e=>setItem({...item,purchaseDate:e.target.value})}/></label><label>{t('price')}<input type="number" value={item.purchasePrice||''} onChange={e=>setItem({...item,purchasePrice:Number(e.target.value)||undefined})}/></label></div>
       <div className="row"><label>{t('referencePrice')}<input type="number" value={item.referencePrice||''} onChange={e=>setItem({...item,referencePrice:Number(e.target.value)||undefined})}/></label><label>{t('referenceUrl')}<input value={item.referenceUrl||''} onChange={e=>setItem({...item,referenceUrl:e.target.value})} placeholder="https://..."/></label></div>
-      <SelectWithCustom labelText={t('purchaseSource')} value={item.purchaseSource||''} options={purchaseSources} onChange={purchaseSource=>setItem({...item,purchaseSource})}/>
-      <div className="row"><div><p>{t('invoiceUpload')}</p><ImageUploader photos={item.invoicePhotos||[]} onChange={invoicePhotos=>setItem({...item,invoicePhotos})}/></div><div><p>{t('certificateUpload')}</p><ImageUploader photos={item.certificatePhotos||[]} onChange={certificatePhotos=>setItem({...item,certificatePhotos})}/></div></div>
-    </FormSection>
+      <SearchableCombobox labelText={t('purchaseSource')} value={item.purchaseSource||''} options={purchaseSources} onChange={purchaseSource=>setItem({...item,purchaseSource})}/>
+      <details className="advanced-fields"><summary>{t('documents')}</summary><div className="row"><div><p>{t('invoiceUpload')}</p><ImageUploader photos={item.invoicePhotos||[]} onChange={invoicePhotos=>setItem({...item,invoicePhotos})}/></div><div><p>{t('certificateUpload')}</p><ImageUploader photos={item.certificatePhotos||[]} onChange={certificatePhotos=>setItem({...item,certificatePhotos})}/></div></div></details>
+    </FormSection>}
 
-    <FormSection title={t('storageInfo')}>
-      <SelectWithCustom labelText={t('storageLocation')} value={item.storageLocation||''} options={storageLocations} onChange={storageLocation=>setItem({...item,storageLocation})}/>
-      <div className="row"><label>{t('boxName')}<input value={item.boxName||''} onChange={e=>setItem({...item,boxName:e.target.value})} placeholder="Jewelry Box A"/></label><label>{t('trayLevel')}<input value={item.trayLevel||''} onChange={e=>setItem({...item,trayLevel:e.target.value})} placeholder="第一层"/></label></div>
-      <div className="row"><label>{t('compartment')}<input value={item.compartment||''} onChange={e=>setItem({...item,compartment:e.target.value})} placeholder="第二格"/></label><label className="switch-row"><input type="checkbox" checked={!!item.travelCase} onChange={e=>setItem({...item,travelCase:e.target.checked})}/>{t('travelCase')}</label></div>
-    </FormSection>
-
-    <FormSection title={t('care')}>
+    {activeStep===3 && <FormSection title={t('managementInfo')}>
+      <SearchableCombobox labelText={t('storageLocation')} value={item.storageLocation||''} options={storageLocations} onChange={storageLocation=>setItem({...item,storageLocation})}/>
       <div className="row"><label>{t('lastCleanedDate')}<input type="date" value={item.lastCleanedDate||''} onChange={e=>setItem({...item,lastCleanedDate:e.target.value})}/></label><label>{t('nextCareDate')}<input type="date" value={item.nextCareDate||''} onChange={e=>setItem({...item,nextCareDate:e.target.value})}/></label></div>
-      <div className="toggle-line"><label><input type="checkbox" checked={!!item.needsPolish} onChange={e=>setItem({...item,needsPolish:e.target.checked})}/>{t('needsPolish')}</label><label><input type="checkbox" checked={!!item.needsRepair} onChange={e=>setItem({...item,needsRepair:e.target.checked})}/>{t('needsRepair')}</label></div>
-    </FormSection>
+      <label>{t('note')}<textarea value={item.note||''} onChange={e=>setItem({...item,note:e.target.value})}/></label>
+      <details className="advanced-fields"><summary>{t('advancedManagement')}</summary><div className="row"><label>{t('boxName')}<input value={item.boxName||''} onChange={e=>setItem({...item,boxName:e.target.value})} placeholder="Jewelry Box A"/></label><label>{t('trayLevel')}<input value={item.trayLevel||''} onChange={e=>setItem({...item,trayLevel:e.target.value})} placeholder="第一层"/></label></div><div className="row"><label>{t('compartment')}<input value={item.compartment||''} onChange={e=>setItem({...item,compartment:e.target.value})} placeholder="第二格"/></label><label className="switch-row"><input type="checkbox" checked={!!item.travelCase} onChange={e=>setItem({...item,travelCase:e.target.checked})}/>{t('travelCase')}</label></div><div className="toggle-line"><label><input type="checkbox" checked={!!item.needsPolish} onChange={e=>setItem({...item,needsPolish:e.target.checked})}/>{t('needsPolish')}</label><label><input type="checkbox" checked={!!item.needsRepair} onChange={e=>setItem({...item,needsRepair:e.target.checked})}/>{t('needsRepair')}</label></div></details>
+    </FormSection>}
 
-    <FormSection title={t('note')}>
-      <textarea value={item.note||''} onChange={e=>setItem({...item,note:e.target.value})}/>
-    </FormSection>
-    <button className="primary form-save" type="submit">{t('save')}</button>
+    <div className="stepper-actions">
+      <button type="button" className="ghost" disabled={activeStep===0} onClick={()=>setActiveStep(step=>Math.max(0,step-1))}>{t('previousStep')}</button>
+      {activeStep<steps.length-1 ? <button type="button" className="primary" onClick={()=>setActiveStep(step=>Math.min(steps.length-1,step+1))}>{t('nextStep')}</button> : <button className="primary form-save" type="submit">{t('save')}</button>}
+    </div>
   </form>;
 }

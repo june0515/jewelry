@@ -8,8 +8,11 @@ import {
 export interface JewelryRecognitionResult {
   name?: string;
   brand?: string;
+  series?: string;
   category?: JewelryCategory;
   materials?: JewelryMaterial[];
+  mainStone?: string;
+  metalColor?: string;
   colors?: string[];
   occasions?: JewelryOccasion[];
   status?: JewelryStatus;
