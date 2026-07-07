@@ -26,6 +26,14 @@ function sendError(res, status, error) {
   res.status(status).json({ error });
 }
 
+function getModelName() {
+  const model = (process.env.OPENAI_MODEL || 'gpt-5.4-nano').trim();
+  if (/gpt\s*-?\s*4\s+nano/i.test(model) || /gpt4\s*nano/i.test(model)) {
+    return 'gpt-4.1-nano';
+  }
+  return model;
+}
+
 module.exports = async function handler(req, res) {
   try {
     if (req.method !== 'POST') {
@@ -36,6 +44,11 @@ module.exports = async function handler(req, res) {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       sendError(res, 500, '缺少 OPENAI_API_KEY，请先在 Vercel 的 Environment Variables 添加到 Production');
+      return;
+    }
+
+    if (!/^[\x21-\x7E]+$/.test(apiKey)) {
+      sendError(res, 500, 'OPENAI_API_KEY 格式不正确：请只粘贴 sk-proj- 开头的英文/数字 key，不要包含中文说明或空格');
       return;
     }
 
@@ -52,7 +65,7 @@ module.exports = async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || 'gpt-5.5',
+        model: getModelName(),
         input: [
           {
             role: 'user',
@@ -111,7 +124,11 @@ module.exports = async function handler(req, res) {
     }
 
     if (!openaiResponse.ok) {
-      sendError(res, openaiResponse.status, (payload && payload.error && payload.error.message) || responseText || 'AI 识别服务暂时不可用');
+      const message = (payload && payload.error && payload.error.message) || responseText || 'AI 识别服务暂时不可用';
+      const modelHint = /model|does not exist|not found|invalid/i.test(message)
+        ? '。请在 Vercel 里把 OPENAI_MODEL 改成 gpt-5.4-nano 或 gpt-4.1-nano，不要写 gpt4 nano'
+        : '';
+      sendError(res, openaiResponse.status, `${message}${modelHint}`);
       return;
     }
 
