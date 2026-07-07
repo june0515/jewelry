@@ -8,8 +8,8 @@ interface JewelryCloudRow {
   updated_at: string;
 }
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || 'https://bisnkqvvtpkqbxucxxwx.supabase.co') as string | undefined;
+const supabaseKey = (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_6H3C3AEJjjxTDHEaeTnuWw_eLBikORs') as string | undefined;
 
 const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
