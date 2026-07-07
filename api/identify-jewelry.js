@@ -22,6 +22,18 @@ function readText(value) {
   return typeof value === 'string' ? value.trim() : '';
 }
 
+function compactName(parsed) {
+  const name = readText(parsed.name);
+  if (name) return name;
+
+  const metalColor = readText(parsed.metalColor);
+  const category = readText(parsed.category);
+  const mainStone = readText(parsed.mainStone);
+  return [metalColor, mainStone && mainStone !== '无主石' ? mainStone : '', category || '首饰']
+    .filter(Boolean)
+    .join(' ');
+}
+
 function sendError(res, status, error) {
   res.status(status).json({ error });
 }
@@ -89,10 +101,13 @@ module.exports = async function handler(req, res) {
                   `metalColor 只能选：${metalColors.join('、')}`,
                   `occasions 只能选：${occasions.join('、')}`,
                   `status 只能选：${statuses.join('、')}`,
-                  '如果无法确认品牌或系列，请留空。不要猜测市场价格。note 用中文简短描述可见款式、形状、宝石、颜色或保养提醒。',
+                  '重点观察：首饰类型、金属颜色、是否有吊坠/链条/耳针/戒圈、是否有珍珠/钻石/彩色宝石、整体风格和可见文字。',
+                  'name 用可见信息生成一个自然名称，例如“金色吊坠项链”“珍珠耳环”“银色戒指”。',
+                  '只有图片上能看出 logo、包装文字、品牌标识时才填写 brand 或 series；无法确认请留空，不要猜品牌。',
+                  '不要猜测市场价格。note 用中文简短描述可见款式、形状、宝石、颜色或保养提醒。',
                 ].join('\n'),
               },
-              { type: 'input_image', image_url: image, detail: 'low' },
+              { type: 'input_image', image_url: image, detail: 'high' },
             ],
           },
         ],
@@ -150,7 +165,7 @@ module.exports = async function handler(req, res) {
     }
 
     res.status(200).json({
-      name: readText(parsed.name),
+      name: compactName(parsed),
       brand: readText(parsed.brand),
       series: readText(parsed.series),
       category: pick(parsed.category, categories, '其他'),
