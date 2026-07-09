@@ -299,6 +299,29 @@ nav a:hover {
   gap: 14px;
 }
 
+.official-panel {
+  border: 1px solid color-mix(in srgb, var(--line) 72%, var(--accent-soft));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 42%, white), var(--panel));
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.official-panel div {
+  display: grid;
+  gap: 4px;
+}
+
+.official-panel span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .ai-panel div {
   display: grid;
   gap: 4px;
@@ -363,6 +386,60 @@ nav a:hover {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.official-result {
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr);
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--panel);
+  padding: 16px;
+  box-shadow: 0 16px 42px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.official-result img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid var(--line-soft);
+  background: var(--panel-strong);
+}
+
+.official-result-body,
+.official-result-heading {
+  display: grid;
+  gap: 10px;
+}
+
+.official-result-heading strong {
+  font-size: 17px;
+}
+
+.official-result-heading span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.official-result dl {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 9px 12px;
+  margin: 0;
+  padding: 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--panel-strong) 72%, white);
+}
+
+.official-result dt {
+  color: var(--muted);
+}
+
+.official-result dd {
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .watch-band {
@@ -1148,6 +1225,23 @@ nav a:hover {
   .ai-panel {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .official-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .official-result {
+    grid-template-columns: 1fr;
+  }
+
+  .official-result img {
+    max-height: 260px;
+  }
+
+  .official-result dl {
+    grid-template-columns: 1fr;
   }
 
   .theme-panel {

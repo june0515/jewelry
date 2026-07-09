@@ -6,6 +6,7 @@ import { JewelryCategory, JewelryItem, JewelryMaterial, JewelryOccasion, Jewelry
 import { brandOptions, getBrandSeries } from '../data/brandData';
 import { ImageUploader } from '../components/ImageUploader';
 import { recognizeJewelry, JewelryRecognitionResult } from '../utils/aiJewelryRecognition';
+import { enrichJewelryFromOfficialSource, OfficialJewelryEnrichmentResult } from '../utils/officialJewelryEnrichment';
 import { saveJewelryToCloud } from '../utils/cloudSync';
 import { useI18n } from '../i18n';
 
@@ -82,6 +83,11 @@ function formatAiError(message: string, fallback: string) {
   return `${fallback} ${message}`;
 }
 
+function formatOfficialError(message: string, fallback: string) {
+  if (!message) return fallback;
+  return `${fallback} ${message}`;
+}
+
 function editableAiResult(result: JewelryRecognitionResult): JewelryRecognitionResult {
   return {
     name: result.name || '',
@@ -92,6 +98,24 @@ function editableAiResult(result: JewelryRecognitionResult): JewelryRecognitionR
     mainStone: result.mainStone || '',
     metalColor: result.metalColor || '',
   };
+}
+
+function sourceUrl(url: string) {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
+function withOfficialMaterialNote(note: string | undefined, materialDescription: string | undefined, labelText: string) {
+  const description = materialDescription?.trim();
+  if (!description) return note || '';
+  const block = `${labelText}: ${description}`;
+  if ((note || '').includes(block)) return note || '';
+  return [note, block].filter(Boolean).join('\n\n');
+}
+
+function confidenceKey(confidence: OfficialJewelryEnrichmentResult['matchConfidence']) {
+  if (confidence === 'high') return 'officialConfidence_high';
+  if (confidence === 'medium') return 'officialConfidence_medium';
+  return 'officialConfidence_low';
 }
 
 export function FormPage(){
@@ -106,6 +130,9 @@ export function FormPage(){
   const [recognizing,setRecognizing]=useState(false);
   const [aiError,setAiError]=useState('');
   const [pendingAiResult,setPendingAiResult]=useState<JewelryRecognitionResult | null>(null);
+  const [enriching,setEnriching]=useState(false);
+  const [officialError,setOfficialError]=useState('');
+  const [officialResult,setOfficialResult]=useState<OfficialJewelryEnrichmentResult | null>(null);
   const [autoRecognizedPhoto,setAutoRecognizedPhoto]=useState('');
   const [touchedSubmit,setTouchedSubmit]=useState(false);
 
@@ -197,6 +224,50 @@ export function FormPage(){
     setPendingAiResult(null);
   }
 
+  async function runOfficialEnrichment() {
+    setEnriching(true);
+    setOfficialError('');
+    try {
+      const source = pendingAiResult || item;
+      const result = await enrichJewelryFromOfficialSource({
+        image: item.photos[0],
+        name: source.name || item.name,
+        brand: source.brand || item.brand,
+        series: source.series || item.series,
+        category: source.category || item.category,
+        materials: source.materials?.length ? source.materials : item.materials,
+        mainStone: source.mainStone || item.mainStone,
+        metalColor: source.metalColor || item.metalColor,
+      });
+      setOfficialResult(result);
+    } catch (error) {
+      setOfficialError(formatOfficialError(error instanceof Error ? error.message : '', t('officialLookupFailed')));
+    } finally {
+      setEnriching(false);
+    }
+  }
+
+  function applyOfficialResult(useOfficialImage: boolean) {
+    if (!officialResult) return;
+    const imageUrl = officialResult.imageUrl?.trim();
+    const nextPhotos = useOfficialImage && imageUrl
+      ? [imageUrl, ...item.photos.filter(photo => photo !== imageUrl)]
+      : item.photos;
+
+    setItem(current => ({
+      ...current,
+      photos: nextPhotos,
+      name: current.name || officialResult.productName || '',
+      brand: current.brand || officialResult.brand || '',
+      series: current.series || officialResult.series || '',
+      referenceUrl: officialResult.productUrl || current.referenceUrl,
+      referencePrice: officialResult.priceAmount || current.referencePrice,
+      purchaseSource: current.purchaseSource || (officialResult.productUrl ? '官网' : current.purchaseSource),
+      materials: officialResult.materials?.length ? officialResult.materials : current.materials,
+      note: withOfficialMaterialNote(current.note, officialResult.materialDescription, t('officialMaterialDescription')),
+    }));
+  }
+
   return <form className="form collection-form stepper-form" onSubmit={submit}>
     <div className="form-heading"><span>{t('luxuryManager')}</span><h1>{id?t('editJewelry'):t('addJewelry')}</h1></div>
     <div className="stepper-tabs">{steps.map((step,index)=><button type="button" key={step} className={activeStep===index?'on':''} onClick={()=>setActiveStep(index)}><span>{index+1}</span>{t(step)}</button>)}</div>
@@ -216,6 +287,35 @@ export function FormPage(){
         </div>
         <MultiSelectDropdown labelText={t('materials')} values={(pendingAiResult.materials || []) as JewelryMaterial[]} options={materials} format={label} onChange={nextMaterials=>updateAiResult({materials:nextMaterials})}/>
         <div className="ai-actions"><button type="button" className="primary" onClick={applyRecognition}>{t('applyAiSuggestion')}</button><button type="button" className="ghost" onClick={()=>setPendingAiResult(null)}>{t('dismissAiSuggestion')}</button></div>
+      </div>}
+      <div className="official-panel">
+        <div>
+          <strong>{t('officialLookupTitle')}</strong>
+          <span>{t('officialLookupBody')}</span>
+        </div>
+        <button type="button" className="ghost" disabled={enriching || (!item.photos.length && !item.name && !pendingAiResult?.name)} onClick={runOfficialEnrichment}>{enriching?t('officialSearching'):t('officialLookup')}</button>
+      </div>
+      {officialError && <div className="form-error">{officialError}</div>}
+      {officialResult && <div className="official-result">
+        {officialResult.imageUrl && <img src={officialResult.imageUrl} alt={officialResult.productName || t('officialImage')}/>}
+        <div className="official-result-body">
+          <div className="official-result-heading">
+            <strong>{officialResult.productName || t('officialNoMatch')}</strong>
+            <span>{t('officialConfidence')}: {t(confidenceKey(officialResult.matchConfidence))}</span>
+          </div>
+          <dl>
+            <dt>{t('brand')}</dt><dd>{officialResult.brand || t('none')}</dd>
+            <dt>{t('series')}</dt><dd>{officialResult.series || t('none')}</dd>
+            <dt>{t('referencePrice')}</dt><dd>{officialResult.priceText || (officialResult.priceAmount ? `$${officialResult.priceAmount.toLocaleString()}` : t('none'))}</dd>
+            <dt>{t('materials')}</dt><dd>{officialResult.materialDescription || officialResult.materials?.join(' / ') || t('none')}</dd>
+            <dt>{t('source')}</dt><dd>{officialResult.productUrl ? <a className="detail-link" href={sourceUrl(officialResult.productUrl)} target="_blank" rel="noreferrer">{officialResult.sourceTitle || t('viewSource')}</a> : t('none')}</dd>
+          </dl>
+          <div className="ai-actions">
+            <button type="button" className="primary" onClick={()=>applyOfficialResult(false)}>{t('applyOfficialInfo')}</button>
+            <button type="button" className="ghost" disabled={!officialResult.imageUrl} onClick={()=>applyOfficialResult(true)}>{t('useOfficialImage')}</button>
+            <button type="button" className="ghost" onClick={()=>setOfficialResult(null)}>{t('dismissAiSuggestion')}</button>
+          </div>
+        </div>
       </div>}
       <label>{t('name')} <RequiredMark/><input value={item.name} onChange={e=>setItem({...item,name:e.target.value})} placeholder={t('namePlaceholder')} aria-invalid={missingName}/>{missingName && <small className="field-error">{t('missingName')}</small>}</label>
       <div className="brand-picker refined-brand-picker">
