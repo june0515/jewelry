@@ -11,11 +11,23 @@ function monthKey(date: Date) {
   return date.toISOString().slice(0, 7);
 }
 
+function greetingKey(date: Date) {
+  const hour = date.getHours();
+  if (hour < 12) return 'goodMorning';
+  if (hour < 18) return 'goodAfternoon';
+  return 'goodEvening';
+}
+
+function localTimeLabel(date: Date) {
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
 export function DashboardPage(){
   const {t}=useI18n();
   const items = useLiveQuery(()=>db.jewelry.orderBy('createdAt').reverse().toArray(), []) || [];
   const wearEvents = useLiveQuery(()=>db.wearEvents.orderBy('wornDate').reverse().toArray(), []) || [];
-  const currentMonth = monthKey(new Date());
+  const now = new Date();
+  const currentMonth = monthKey(now);
   const totalValue = items.reduce((s,i)=>s+(i.referencePrice || i.purchasePrice || 0),0);
   const brandCount = new Set(items.map(i=>i.brand).filter(Boolean)).size;
   const monthlyWear = wearEvents.filter(event => event.wornDate.startsWith(currentMonth)).length;
@@ -30,7 +42,22 @@ export function DashboardPage(){
   const watchValue = watches.reduce((s,i)=>s+(i.purchasePrice||i.referencePrice||0),0);
 
   return <section className="dashboard-page">
-    <div className="hero dashboard-hero"><div><span>{t('luxuryManager')}</span><h1>{t('goodMorning')}</h1><p>{t('wardrobeSubtitle')}</p></div><a className="primary" href="/new">{t('addItem')}</a></div>
+    <div className="hero dashboard-hero">
+      <div className="hero-copy">
+        <div className="hero-kicker"><span>{t('luxuryManager')}</span><em>{t('localTime')}: {localTimeLabel(now)}</em></div>
+        <h1>{t(greetingKey(now))}</h1>
+        <p>{t('wardrobeSubtitle')}</p>
+        <div className="hero-insights">
+          <span>{items.length} {t('pieces')}</span>
+          <span>{brandCount} {t('brandCount')}</span>
+          <span>{monthlyWear} {t('monthlyWear')}</span>
+        </div>
+      </div>
+      <div className="hero-action">
+        <div className="hero-jewel"><span>{todayPick?.brand || t('todayPick')}</span><strong>{todayPick?.name || t('emptyDashboard')}</strong></div>
+        <a className="primary" href="/new">{t('addItem')}</a>
+      </div>
+    </div>
     <div className="stats dashboard-stats">
       <div><Gem/><span>{t('totalCollection')}</span><strong>{items.length}</strong><small>{t('pieces')}</small></div>
       <div><DollarSign/><span>{t('totalValue')}</span><strong>${totalValue.toLocaleString()}</strong><small>{t('estimate')}</small></div>
