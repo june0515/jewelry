@@ -44,6 +44,81 @@
   --shadow: 0 22px 62px rgba(52, 60, 66, .11);
 }
 
+:root[data-theme='candy'] {
+  --app-bg: #fff4f8;
+  --panel: #fffefe;
+  --panel-strong: #fff0f6;
+  --line: #f1bdd2;
+  --line-soft: #f6d8e5;
+  --accent: #e8488f;
+  --accent-2: #ff9ac4;
+  --accent-soft: #ffe0ee;
+  --accent-ink: #a71f5e;
+  --metal-dark: #8e1f58;
+  --surface-glow: rgba(255, 154, 196, .28);
+  --shadow: 0 22px 62px rgba(180, 48, 112, .12);
+}
+
+:root[data-theme='lime'] {
+  --app-bg: #f5fbef;
+  --panel: #fffefb;
+  --panel-strong: #eefbdd;
+  --line: #cbe8a3;
+  --line-soft: #deefc7;
+  --accent: #74b72e;
+  --accent-2: #b9e86b;
+  --accent-soft: #e8f8c8;
+  --accent-ink: #3f7417;
+  --metal-dark: #335e13;
+  --surface-glow: rgba(185, 232, 107, .3);
+  --shadow: 0 22px 62px rgba(79, 135, 28, .11);
+}
+
+:root[data-theme='sky'] {
+  --app-bg: #f2f8ff;
+  --panel: #ffffff;
+  --panel-strong: #eaf5ff;
+  --line: #b7d8f5;
+  --line-soft: #d4e8f8;
+  --accent: #2f8ed8;
+  --accent-2: #8fd0ff;
+  --accent-soft: #dff1ff;
+  --accent-ink: #1d5f95;
+  --metal-dark: #174d7a;
+  --surface-glow: rgba(143, 208, 255, .3);
+  --shadow: 0 22px 62px rgba(42, 112, 166, .11);
+}
+
+:root[data-theme='coral'] {
+  --app-bg: #fff6f0;
+  --panel: #fffefd;
+  --panel-strong: #fff0e6;
+  --line: #efc1a8;
+  --line-soft: #f5d9ca;
+  --accent: #e5683f;
+  --accent-2: #ffb078;
+  --accent-soft: #ffe1ce;
+  --accent-ink: #994127;
+  --metal-dark: #81341d;
+  --surface-glow: rgba(255, 176, 120, .28);
+  --shadow: 0 22px 62px rgba(177, 82, 42, .12);
+}
+
+:root[data-theme='lilac'] {
+  --app-bg: #f8f4ff;
+  --panel: #ffffff;
+  --panel-strong: #f1eaff;
+  --line: #d5c1f2;
+  --line-soft: #e4d8f7;
+  --accent: #8d5be8;
+  --accent-2: #c3a1ff;
+  --accent-soft: #eadfff;
+  --accent-ink: #5b33a3;
+  --metal-dark: #4d2a8a;
+  --surface-glow: rgba(195, 161, 255, .28);
+  --shadow: 0 22px 62px rgba(92, 59, 157, .11);
+}
+
 body {
   color: var(--text);
   background:
@@ -506,7 +581,7 @@ nav a:hover {
 
 .theme-options {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
 }
 
@@ -533,6 +608,26 @@ nav a:hover {
 
 [data-theme-option='rose'] {
   background: linear-gradient(135deg, #f7c2b4, #b76f5d);
+}
+
+[data-theme-option='candy'] {
+  background: linear-gradient(135deg, #ffd6e7, #ff7eb3 58%, #e8488f);
+}
+
+[data-theme-option='lime'] {
+  background: linear-gradient(135deg, #f3ffc4, #b9e86b 58%, #74b72e);
+}
+
+[data-theme-option='sky'] {
+  background: linear-gradient(135deg, #ecf8ff, #8fd0ff 58%, #2f8ed8);
+}
+
+[data-theme-option='coral'] {
+  background: linear-gradient(135deg, #ffe2cf, #ffae76 58%, #e5683f);
+}
+
+[data-theme-option='lilac'] {
+  background: linear-gradient(135deg, #f2e9ff, #c3a1ff 58%, #8d5be8);
 }
 
 .ghost:disabled {

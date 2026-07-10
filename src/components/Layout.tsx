@@ -7,6 +7,11 @@ const themes = [
   { id: 'gold', label: 'themeGold' },
   { id: 'silver', label: 'themeSilver' },
   { id: 'rose', label: 'themeRose' },
+  { id: 'candy', label: 'themeCandy' },
+  { id: 'lime', label: 'themeLime' },
+  { id: 'sky', label: 'themeSky' },
+  { id: 'coral', label: 'themeCoral' },
+  { id: 'lilac', label: 'themeLilac' },
 ] as const;
 
 export function Layout(){
