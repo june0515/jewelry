@@ -138,7 +138,7 @@ export function FormPage(){
   const [activeStep,setActiveStep]=useState(0);
   const [brandQuery,setBrandQuery]=useState('');
   const [showAllBrands,setShowAllBrands]=useState(false);
-  const [recognizing,setRecognizing]=useState(false);
+  const [recognizingMode,setRecognizingMode]=useState<'fast' | 'precise' | ''>('');
   const [aiError,setAiError]=useState('');
   const [pendingAiResult,setPendingAiResult]=useState<JewelryRecognitionResult | null>(null);
   const [enriching,setEnriching]=useState(false);
@@ -193,30 +193,30 @@ export function FormPage(){
     nav(`/items/${saved.id}`);
   }
 
-  async function runRecognition(photo: string){
+  async function runRecognition(photo: string, mode: 'fast' | 'precise' = 'fast'){
     if(!photo) return;
-    setRecognizing(true);
+    setRecognizingMode(mode);
     setAiError('');
     try{
-      const result = await recognizeJewelry(photo);
+      const result = await recognizeJewelry(photo, mode);
       if (isUnhelpfulAiResult(result)) {
         setPendingAiResult(null);
-        setAiError(t('aiUnhelpfulResult'));
+        setAiError(mode === 'fast' ? t('aiFastUnhelpfulResult') : t('aiUnhelpfulResult'));
         return;
       }
       setPendingAiResult(editableAiResult(result));
     }catch(error){
       setAiError(formatAiError(error instanceof Error ? error.message : '', t('aiFailed')));
     }finally{
-      setRecognizing(false);
+      setRecognizingMode('');
     }
   }
 
-  function identify(){
+  function identify(mode: 'fast' | 'precise' = 'fast'){
     const photo = item.photos[0];
     if(photo) {
       setAutoRecognizedPhoto(photo);
-      runRecognition(photo);
+      runRecognition(photo, mode);
     }
   }
 
@@ -290,7 +290,7 @@ export function FormPage(){
 
     {activeStep===0 && <FormSection title={t('basicInfo')}>
       <ImageUploader photos={item.photos} onChange={photos=>setItem({...item,photos})}/>
-      <div className="ai-panel"><div><strong>{t('aiTitle')}</strong><span>{t('aiBody')}</span></div><button type="button" className="ghost" disabled={!item.photos.length || recognizing} onClick={identify}>{recognizing?t('recognizing'):t('aiIdentify')}</button></div>
+      <div className="ai-panel"><div><strong>{t('aiTitle')}</strong><span>{t('aiBody')}</span></div><div className="ai-button-group"><button type="button" className="ghost" disabled={!item.photos.length || !!recognizingMode} onClick={()=>identify('fast')}>{recognizingMode==='fast'?t('recognizing'):t('aiIdentifyFast')}</button><button type="button" className="primary" disabled={!item.photos.length || !!recognizingMode} onClick={()=>identify('precise')}>{recognizingMode==='precise'?t('recognizing'):t('aiIdentifyPrecise')}</button></div></div>
       {aiError && <div className="form-error">{aiError}</div>}
       {pendingAiResult && <div className="ai-suggestion ai-editor"><div><strong>{t('aiSuggestionTitle')}</strong><span>{t('aiSuggestionBody')}</span></div>
         <div className="ai-edit-grid">

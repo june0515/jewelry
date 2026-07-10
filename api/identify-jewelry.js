@@ -46,12 +46,18 @@ function sendError(res, status, error) {
   res.status(status).json({ error });
 }
 
-function getModelName() {
-  const model = (process.env.OPENAI_MODEL || 'gpt-5.4-nano').trim();
+function normalizeModelName(model) {
   if (/gpt\s*-?\s*4\s+nano/i.test(model) || /gpt4\s*nano/i.test(model)) {
     return 'gpt-4.1-nano';
   }
   return model;
+}
+
+function getModelName(mode) {
+  const fallback = mode === 'precise'
+    ? process.env.OPENAI_PRECISE_MODEL || process.env.OPENAI_ENRICH_MODEL || 'gpt-5.4-mini'
+    : process.env.OPENAI_MODEL || 'gpt-5.4-nano';
+  return normalizeModelName(fallback.trim());
 }
 
 function getApiKey() {
@@ -86,6 +92,8 @@ module.exports = async function handler(req, res) {
       sendError(res, 400, '请上传一张首饰照片后再识别');
       return;
     }
+    const mode = req.body && req.body.mode === 'precise' ? 'precise' : 'fast';
+    const modelName = getModelName(mode);
 
     const openaiResponse = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
@@ -94,7 +102,7 @@ module.exports = async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: getModelName(),
+        model: modelName,
         input: [
           {
             role: 'user',
@@ -189,7 +197,8 @@ module.exports = async function handler(req, res) {
       occasions: cleanList(parsed.occasions, occasions),
       status: pick(parsed.status, statuses, '常戴'),
       note: readText(parsed.note),
-      model: getModelName(),
+      model: modelName,
+      mode,
       weakResult: isWeakResult(parsed),
     };
 

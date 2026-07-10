@@ -333,6 +333,14 @@ nav a:hover {
   line-height: 1.5;
 }
 
+.ai-button-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .form-error {
   border: 1px solid color-mix(in srgb, var(--accent) 28%, #f0c5c1);
   background: color-mix(in srgb, var(--accent-soft) 28%, #fff7f5);
@@ -1225,6 +1233,16 @@ nav a:hover {
   .ai-panel {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .ai-button-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+
+  .ai-button-group button {
+    width: 100%;
   }
 
   .official-panel {

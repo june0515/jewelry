@@ -18,14 +18,15 @@ export interface JewelryRecognitionResult {
   status?: JewelryStatus;
   note?: string;
   model?: string;
+  mode?: 'fast' | 'precise';
   weakResult?: boolean;
 }
 
-export async function recognizeJewelry(photo: string): Promise<JewelryRecognitionResult> {
+export async function recognizeJewelry(photo: string, mode: 'fast' | 'precise' = 'fast'): Promise<JewelryRecognitionResult> {
   const response = await fetch('/api/identify-jewelry', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ image: photo }),
+    body: JSON.stringify({ image: photo, mode }),
   });
 
   const payload = await response.json().catch(() => null);
