@@ -327,11 +327,107 @@ nav a:hover {
 }
 
 .jewel-card {
-  border-radius: 16px;
+  position: relative;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.96), var(--panel)),
+    var(--panel);
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--line-soft) 80%, white);
+  box-shadow: 0 16px 38px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .jewel-card:hover {
   box-shadow: 0 24px 56px color-mix(in srgb, var(--accent) 17%, transparent);
+}
+
+.jewel-photo {
+  position: relative;
+  height: 230px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 54%, white), white);
+}
+
+.jewel-photo::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 52%;
+  background: linear-gradient(180deg, transparent, rgba(36,31,24,.52));
+  pointer-events: none;
+}
+
+.jewel-photo img {
+  transition: transform .32s ease;
+}
+
+.jewel-card:hover .jewel-photo img {
+  transform: scale(1.035);
+}
+
+.card-cover-meta {
+  position: absolute;
+  z-index: 1;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.card-cover-meta em,
+.card-cover-meta strong {
+  font-style: normal;
+  border: 1px solid rgba(255,255,255,.4);
+  border-radius: 999px;
+  background: rgba(255,255,255,.76);
+  color: var(--accent-ink);
+  backdrop-filter: blur(10px);
+  padding: 6px 9px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.jewel-card-body {
+  display: grid;
+  gap: 9px;
+  padding: 16px;
+}
+
+.card-title-row {
+  display: grid;
+  gap: 4px;
+}
+
+.card-title-row strong {
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.card-title-row span {
+  color: var(--accent-ink);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.card-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.card-metrics span {
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: var(--panel-strong);
+  color: var(--muted);
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .chips span,
@@ -1130,6 +1226,75 @@ nav a:hover {
 
 .detail-luxury {
   grid-template-columns: minmax(0, 1fr) minmax(380px, 480px);
+  align-items: start;
+}
+
+.luxury-gallery {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+.luxury-gallery img,
+.luxury-gallery .placeholder {
+  border: 1px solid var(--line-soft);
+  box-shadow: 0 18px 44px color-mix(in srgb, var(--accent) 10%, transparent);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--panel-strong) 80%, white), white);
+}
+
+.luxury-gallery img:first-child,
+.luxury-gallery .placeholder:first-child {
+  grid-column: 1 / -1;
+  height: min(560px, 62vw);
+}
+
+.passport-card {
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.96), var(--panel)),
+    linear-gradient(135deg, transparent, var(--surface-glow));
+}
+
+.passport-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.passport-head p {
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+
+.passport-head > span {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  padding: 8px 12px;
+  font-weight: 850;
+  font-size: 12px;
+}
+
+.passport-list {
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  padding: 12px;
+  background: color-mix(in srgb, var(--panel-strong) 54%, white);
+}
+
+.passport-list dt {
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.passport-list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .value-strip {
@@ -1577,5 +1742,22 @@ nav a:hover {
 
   .detail-luxury {
     grid-template-columns: 1fr;
+  }
+
+  .luxury-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .luxury-gallery img:first-child,
+  .luxury-gallery .placeholder:first-child {
+    height: 360px;
+  }
+
+  .jewel-photo {
+    height: 210px;
+  }
+
+  .passport-head {
+    display: grid;
   }
 }
