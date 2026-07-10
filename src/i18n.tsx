@@ -177,6 +177,7 @@ const dictionary = {
     source: '渠道',
     none: '-',
     aiFailed: 'AI 暂时不可用，可以先手动填写，之后再重新识别。',
+    aiUnhelpfulResult: 'AI 看到了图片，但没有识别出可用信息。请换一张更清晰、主体更大的照片，或在 Vercel 把 OPENAI_MODEL 改成 gpt-5.4-mini 再试。',
     cloudSyncFailed: '已保存在本机，但云端同步失败。请检查 Supabase 设置或稍后再试。',
   },
   en: {
@@ -353,6 +354,7 @@ const dictionary = {
     source: 'Source',
     none: '-',
     aiFailed: 'AI is temporarily unavailable. You can fill this manually and retry later.',
+    aiUnhelpfulResult: 'AI saw the image but could not extract useful details. Try a clearer close-up, or set OPENAI_MODEL to gpt-5.4-mini in Vercel.',
     cloudSyncFailed: 'Saved on this device, but cloud sync failed. Check Supabase settings or try again later.',
   },
 } as const;

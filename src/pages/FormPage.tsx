@@ -100,6 +100,17 @@ function editableAiResult(result: JewelryRecognitionResult): JewelryRecognitionR
   };
 }
 
+function isUnhelpfulAiResult(result: JewelryRecognitionResult) {
+  const name = (result.name || '').trim();
+  return !!result.weakResult || (
+    (!name || name === '首饰') &&
+    (!result.category || result.category === '其他') &&
+    !(result.materials || []).length &&
+    !result.mainStone &&
+    !result.metalColor
+  );
+}
+
 function sourceUrl(url: string) {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
 }
@@ -188,6 +199,11 @@ export function FormPage(){
     setAiError('');
     try{
       const result = await recognizeJewelry(photo);
+      if (isUnhelpfulAiResult(result)) {
+        setPendingAiResult(null);
+        setAiError(t('aiUnhelpfulResult'));
+        return;
+      }
       setPendingAiResult(editableAiResult(result));
     }catch(error){
       setAiError(formatAiError(error instanceof Error ? error.message : '', t('aiFailed')));

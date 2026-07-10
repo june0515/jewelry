@@ -17,6 +17,8 @@ export interface JewelryRecognitionResult {
   occasions?: JewelryOccasion[];
   status?: JewelryStatus;
   note?: string;
+  model?: string;
+  weakResult?: boolean;
 }
 
 export async function recognizeJewelry(photo: string): Promise<JewelryRecognitionResult> {

@@ -4,6 +4,7 @@ const occasions = ['日常','通勤','正式','约会','派对','旅行'];
 const statuses = ['常戴','收藏','需保养','已遗失','想转卖'];
 const stones = ['钻石','珍珠','Mother of Pearl','玛瑙','翡翠','红宝石','蓝宝石','祖母绿','水晶','无主石','其他'];
 const metalColors = ['Yellow Gold','Rose Gold','White Gold','Silver','Platinum','Black','Two-tone','其他'];
+const genericNames = ['首饰','珠宝','jewelry','accessory','饰品'];
 
 function cleanList(values, allowed) {
   if (!Array.isArray(values)) return [];
@@ -24,7 +25,7 @@ function readText(value) {
 
 function compactName(parsed) {
   const name = readText(parsed.name);
-  if (name) return name;
+  if (name && !genericNames.includes(name.toLowerCase())) return name;
 
   const metalColor = readText(parsed.metalColor);
   const category = readText(parsed.category);
@@ -32,6 +33,13 @@ function compactName(parsed) {
   return [metalColor, mainStone && mainStone !== '无主石' ? mainStone : '', category || '首饰']
     .filter(Boolean)
     .join(' ');
+}
+
+function isWeakResult(result) {
+  const name = readText(result.name).toLowerCase();
+  const category = readText(result.category);
+  const materialCount = Array.isArray(result.materials) ? result.materials.length : 0;
+  return genericNames.includes(name) && (!category || category === '其他') && materialCount === 0;
 }
 
 function sendError(res, status, error) {
@@ -94,15 +102,20 @@ module.exports = async function handler(req, res) {
               {
                 type: 'input_text',
                 text: [
-                  '识别这张首饰照片，给个人首饰管理 app 生成可编辑建议。',
+                  'You are a careful jewelry and watch visual cataloging assistant.',
+                  '识别这张上传的首饰/手表照片，给个人首饰管理 app 生成可编辑建议。',
                   `category 只能选：${categories.join('、')}`,
                   `materials 只能选：${materials.join('、')}`,
                   `mainStone 只能选：${stones.join('、')}`,
                   `metalColor 只能选：${metalColors.join('、')}`,
                   `occasions 只能选：${occasions.join('、')}`,
                   `status 只能选：${statuses.join('、')}`,
+                  '如果画面中能看到项链、戒指、耳环、手链、手表、胸针或脚链，请不要把 category 填“其他”。请选择最接近的一类。',
+                  '如果能看到金色、银色、玫瑰金、白金、黑色或双色金属，请填写 metalColor。',
+                  '如果看起来像黄金/K金/银/铂金/珍珠/钻石/天然石/合金，请在 materials 里至少选择最可能的 1 项；不确定具体成分时可选“其他”。',
+                  '如果没有明显主石，请 mainStone 选“无主石”。',
                   '重点观察：首饰类型、金属颜色、是否有吊坠/链条/耳针/戒圈、是否有珍珠/钻石/彩色宝石、整体风格和可见文字。',
-                  'name 用可见信息生成一个自然名称，例如“金色吊坠项链”“珍珠耳环”“银色戒指”。',
+                  'name 必须用可见信息生成一个自然名称，不要只写“首饰”。例如“金色吊坠项链”“珍珠耳环”“银色戒指”“黑色皮带腕表”。',
                   '只有图片上能看出 logo、包装文字、品牌标识时才填写 brand 或 series；无法确认请留空，不要猜品牌。',
                   '不要猜测市场价格。note 用中文简短描述可见款式、形状、宝石、颜色或保养提醒。',
                 ].join('\n'),
@@ -164,7 +177,7 @@ module.exports = async function handler(req, res) {
       return;
     }
 
-    res.status(200).json({
+    const result = {
       name: compactName(parsed),
       brand: readText(parsed.brand),
       series: readText(parsed.series),
@@ -176,7 +189,11 @@ module.exports = async function handler(req, res) {
       occasions: cleanList(parsed.occasions, occasions),
       status: pick(parsed.status, statuses, '常戴'),
       note: readText(parsed.note),
-    });
+      model: getModelName(),
+      weakResult: isWeakResult(parsed),
+    };
+
+    res.status(200).json(result);
   } catch (error) {
     console.error('Jewelry recognition failed:', error);
     sendError(res, 502, error && error.message ? `AI 识别服务请求失败：${error.message}` : 'AI 识别服务暂时不可用');
