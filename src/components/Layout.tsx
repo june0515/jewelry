@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { BarChart3, CalendarDays, Gem, Heart, Home, Palette, PlusCircle, Search, Settings, Sparkles, Watch } from 'lucide-react';
+import { BarChart3, CalendarDays, CircleDot, Gem, Heart, Home, Palette, PlusCircle, Search, Settings, Sparkles, Watch } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '../i18n';
 
@@ -26,7 +26,10 @@ export function Layout(){
   }, [theme]);
   return <div className="shell">
     <aside className="side">
-      <div className="brand"><Sparkles size={24}/><div><strong>Jewelry</strong><span>WARDROBE</span></div></div>
+      <div className="brand">
+        <div className="brand-mark"><Sparkles size={24}/><CircleDot size={16}/></div>
+        <div><strong>Jewelry</strong><span>WARDROBE</span></div>
+      </div>
       <div className="language-switch"><button className={language==='zh'?'on':''} onClick={()=>setLanguage('zh')}>中文</button><button className={language==='en'?'on':''} onClick={()=>setLanguage('en')}>English</button></div>
       <nav>
         <NavLink to="/"><Home size={18}/>{t('home')}</NavLink>

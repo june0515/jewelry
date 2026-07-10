@@ -141,9 +141,34 @@ body {
   border-bottom: 1px solid var(--line-soft);
 }
 
-.brand svg {
+.brand-mark {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--line) 78%, white);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 72% 24%, rgba(255,255,255,.9) 0 12%, transparent 13%),
+    linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 82%, white), var(--panel));
+  box-shadow: 0 12px 30px var(--surface-glow);
+}
+
+.brand-mark svg {
   color: var(--accent);
   filter: drop-shadow(0 8px 16px var(--surface-glow));
+}
+
+.brand-mark svg:last-child {
+  position: absolute;
+  right: -5px;
+  bottom: -4px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--accent-ink);
+  box-shadow: 0 6px 16px rgba(36,31,24,.1);
 }
 
 .brand strong {
@@ -298,6 +323,36 @@ nav a:hover {
   gap: 14px;
 }
 
+.jewel-visual {
+  width: min(280px, 100%);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-right: 8px;
+}
+
+.jewel-visual span {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--line) 70%, white);
+  border-radius: 999px;
+  color: var(--accent-ink);
+  background:
+    radial-gradient(circle at 32% 24%, rgba(255,255,255,.95) 0 16%, transparent 17%),
+    linear-gradient(135deg, var(--panel), color-mix(in srgb, var(--accent-soft) 78%, white));
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.jewel-visual span:nth-child(2) {
+  transform: translateY(10px);
+}
+
+.jewel-visual span:nth-child(3) {
+  transform: translateY(-6px);
+}
+
 .hero-jewel {
   width: min(280px, 100%);
   min-height: 138px;
@@ -420,6 +475,8 @@ nav a:hover {
   position: relative;
   height: 230px;
   background:
+    radial-gradient(circle at 26% 18%, rgba(255,255,255,.9) 0 10%, transparent 11%),
+    radial-gradient(circle at 78% 30%, color-mix(in srgb, var(--accent-2) 26%, transparent) 0 12%, transparent 13%),
     linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 54%, white), white);
 }
 
@@ -440,6 +497,47 @@ nav a:hover {
   transform: scale(1.035);
 }
 
+.card-placeholder {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  height: 100%;
+  color: var(--accent-ink);
+  font-weight: 850;
+}
+
+.card-placeholder svg {
+  width: 58px;
+  height: 58px;
+  padding: 13px;
+  border: 1px solid color-mix(in srgb, var(--line) 74%, white);
+  border-radius: 18px;
+  background: rgba(255,255,255,.72);
+  box-shadow: 0 16px 34px var(--surface-glow);
+}
+
+.card-placeholder small {
+  font-size: 12px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.card-spark {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.42);
+  border-radius: 999px;
+  color: var(--accent-ink);
+  background: rgba(255,255,255,.78);
+  backdrop-filter: blur(10px);
+}
+
 .card-cover-meta {
   position: absolute;
   z-index: 1;
@@ -454,6 +552,9 @@ nav a:hover {
 
 .card-cover-meta em,
 .card-cover-meta strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-style: normal;
   border: 1px solid rgba(255,255,255,.4);
   border-radius: 999px;
@@ -463,6 +564,25 @@ nav a:hover {
   padding: 6px 9px;
   font-size: 12px;
   font-weight: 850;
+}
+
+.illustrated-empty {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.illustrated-empty svg {
+  width: 54px;
+  height: 54px;
+  padding: 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 18px;
+  color: var(--accent);
+  background: linear-gradient(135deg, var(--panel), var(--accent-soft));
+  box-shadow: 0 14px 30px var(--surface-glow);
 }
 
 .jewel-card-body {

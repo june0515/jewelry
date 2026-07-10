@@ -4,7 +4,7 @@ import { db } from '../db/db';
 import { JewelryCard } from '../components/JewelryCard';
 import { exportJson } from '../utils/exportJson';
 import { daysSince } from '../utils/date';
-import { CalendarCheck, DollarSign, Gem, Heart, Tags } from 'lucide-react';
+import { CalendarCheck, CircleDot, Diamond, DollarSign, Gem, Heart, Sparkles, Tags } from 'lucide-react';
 import { useI18n } from '../i18n';
 
 function monthKey(date: Date) {
@@ -59,6 +59,11 @@ export function DashboardPage(){
         </div>
       </div>
       <div className="hero-action">
+        <div className="jewel-visual" aria-hidden="true">
+          <span><Diamond size={22}/></span>
+          <span><CircleDot size={20}/></span>
+          <span><Sparkles size={18}/></span>
+        </div>
         <div className="hero-jewel"><span>{todayPick?.brand || t('todayPick')}</span><strong>{todayPick?.name || t('emptyDashboard')}</strong></div>
         <a className="primary" href="/new">{t('addItem')}</a>
       </div>
@@ -76,7 +81,7 @@ export function DashboardPage(){
     <div className="dashboard-panels">
       <div className="panel">
         <div className="section-title"><h2>{t('todayPick')}</h2></div>
-        {todayPick ? <JewelryCard item={todayPick}/> : <div className="empty compact">{t('emptyDashboard')}</div>}
+        {todayPick ? <JewelryCard item={todayPick}/> : <div className="empty compact illustrated-empty"><Gem size={28}/><span>{t('emptyDashboard')}</span></div>}
       </div>
       <div className="panel">
         <div className="section-title"><h2>{t('recentlyWorn')}</h2><a className="ghost" href="/wear-history">{t('wearHistory')}</a></div>
