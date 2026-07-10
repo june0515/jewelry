@@ -396,6 +396,23 @@ nav a:hover {
   flex-wrap: wrap;
 }
 
+.source-note {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: -6px;
+}
+
+.material-description {
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--panel-strong) 70%, white);
+  color: var(--accent-ink);
+  padding: 12px 14px;
+  line-height: 1.55;
+}
+
 .official-result {
   display: grid;
   grid-template-columns: 168px minmax(0, 1fr);

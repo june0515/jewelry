@@ -4,9 +4,17 @@ import { db } from '../db/db';
 import { today } from '../utils/date';
 import { deleteJewelryFromCloud, saveJewelryToCloud } from '../utils/cloudSync';
 import { useI18n } from '../i18n';
+import { JewelryItem } from '../types/jewelry';
 
 function sourceUrl(url: string) {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
+function materialSourceKey(source: JewelryItem['materialSource']) {
+  if (source === 'official') return 'materialSourceOfficial';
+  if (source === 'ai_visual') return 'materialSourceAi';
+  if (source === 'manual') return 'materialSourceManual';
+  return 'materialSourceUnverified';
 }
 
 export function DetailPage(){
@@ -56,6 +64,9 @@ export function DetailPage(){
     <dl>
       <dt>{t('series')}</dt><dd>{item.series || t('none')}</dd>
       <dt>{t('mainStone')}</dt><dd>{item.mainStone || t('none')}</dd>
+      <dt>{t('materials')}</dt><dd>{item.materials.map(label).join(' / ') || t('none')}</dd>
+      <dt>{t('materialSource')}</dt><dd>{t(materialSourceKey(item.materialSource))}{item.materialSourceUrl ? <> · <a className="detail-link" href={sourceUrl(item.materialSourceUrl)} target="_blank" rel="noreferrer">{t('viewSource')}</a></> : ''}</dd>
+      <dt>{t('officialMaterialDescription')}</dt><dd>{item.materialDescription || t('none')}</dd>
       <dt>{t('metalColor')}</dt><dd>{item.metalColor || t('none')}</dd>
       <dt>{t('size')}</dt><dd>{item.size || t('none')}</dd>
       <dt>{t('colors')}</dt><dd>{item.colors.join(' / ') || t('none')}</dd>

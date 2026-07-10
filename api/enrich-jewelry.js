@@ -88,12 +88,13 @@ module.exports = async function handler(req, res) {
             {
               type: 'input_text',
               text: [
-                'Find the most likely official brand product page for this jewelry item.',
-                'Use the uploaded image and the provided hints. Prefer official brand websites only.',
+                'Find the most likely official brand product page for this jewelry or watch item, then extract its official material/composition description.',
+                'Use the uploaded image and the provided hints to identify the style, collection, product name, or reference. Prefer official brand websites only.',
                 'Do not invent a product, price, URL, image, brand, material, or series.',
                 'If you cannot verify the item on an official page, return empty strings and matchConfidence "low".',
                 'Return current official retail price only if it is visible on the official product page.',
                 'Return an official product image URL only if it comes from the official product page or official search result image.',
+                'For materialDescription, quote or closely summarize the official page material/composition wording, including metal, stone, pearl, dial, strap, or coating when visible.',
                 `Allowed materials: ${materials.join(', ')}`,
                 `Hints: ${JSON.stringify(hints)}`,
               ].join('\n'),

@@ -123,6 +123,13 @@ function withOfficialMaterialNote(note: string | undefined, materialDescription:
   return [note, block].filter(Boolean).join('\n\n');
 }
 
+function materialSourceKey(source: JewelryItem['materialSource']) {
+  if (source === 'official') return 'materialSourceOfficial';
+  if (source === 'ai_visual') return 'materialSourceAi';
+  if (source === 'manual') return 'materialSourceManual';
+  return 'materialSourceUnverified';
+}
+
 function confidenceKey(confidence: OfficialJewelryEnrichmentResult['matchConfidence']) {
   if (confidence === 'high') return 'officialConfidence_high';
   if (confidence === 'medium') return 'officialConfidence_medium';
@@ -234,6 +241,7 @@ export function FormPage(){
       series: current.series || result.series || '',
       category: result.category || current.category,
       materials: result.materials?.length ? result.materials : current.materials,
+      materialSource: result.materials?.length ? 'ai_visual' : current.materialSource,
       mainStone: current.mainStone || result.mainStone || '',
       metalColor: current.metalColor || result.metalColor || '',
     }));
@@ -280,6 +288,9 @@ export function FormPage(){
       referencePrice: officialResult.priceAmount || current.referencePrice,
       purchaseSource: current.purchaseSource || (officialResult.productUrl ? '官网' : current.purchaseSource),
       materials: officialResult.materials?.length ? officialResult.materials : current.materials,
+      materialSource: officialResult.materials?.length || officialResult.materialDescription ? 'official' : current.materialSource,
+      materialSourceUrl: officialResult.productUrl || current.materialSourceUrl,
+      materialDescription: officialResult.materialDescription || current.materialDescription,
       note: withOfficialMaterialNote(current.note, officialResult.materialDescription, t('officialMaterialDescription')),
     }));
   }
@@ -302,6 +313,7 @@ export function FormPage(){
           <label>{t('metalColor')}<input value={pendingAiResult.metalColor || ''} onChange={e=>updateAiResult({metalColor:e.target.value})}/></label>
         </div>
         <MultiSelectDropdown labelText={t('materials')} values={(pendingAiResult.materials || []) as JewelryMaterial[]} options={materials} format={label} onChange={nextMaterials=>updateAiResult({materials:nextMaterials})}/>
+        <small className="source-note">{t('materialSource')}: {t('materialSourceAi')}</small>
         <div className="ai-actions"><button type="button" className="primary" onClick={applyRecognition}>{t('applyAiSuggestion')}</button><button type="button" className="ghost" onClick={()=>setPendingAiResult(null)}>{t('dismissAiSuggestion')}</button></div>
       </div>}
       <div className="official-panel">
@@ -344,7 +356,9 @@ export function FormPage(){
     </FormSection>}
 
     {activeStep===1 && <FormSection title={t('jewelryInfo')}>
-      <MultiSelectDropdown labelText={t('materials')} values={item.materials} options={materials} format={label} onChange={nextMaterials=>setItem({...item,materials:nextMaterials})}/>
+      <MultiSelectDropdown labelText={t('materials')} values={item.materials} options={materials} format={label} onChange={nextMaterials=>setItem({...item,materials:nextMaterials,materialSource:'manual'})}/>
+      <small className="source-note">{t('materialSource')}: {t(materialSourceKey(item.materialSource))}{item.materialSourceUrl && <> · <a className="detail-link" href={sourceUrl(item.materialSourceUrl)} target="_blank" rel="noreferrer">{t('viewSource')}</a></>}</small>
+      {item.materialDescription && <div className="material-description">{item.materialDescription}</div>}
       <div className="row"><SearchableCombobox labelText={t('mainStone')} value={item.mainStone||''} options={stones} onChange={mainStone=>setItem({...item,mainStone})}/><SearchableCombobox labelText={t('metalColor')} value={item.metalColor||''} options={metalColors} onChange={metalColor=>setItem({...item,metalColor})}/></div>
       <div className="row"><label>{t('size')}<input value={item.size||''} onChange={e=>setItem({...item,size:e.target.value})} placeholder="42cm / US 6 / 16mm"/></label><label>{t('weight')}<input type="number" value={item.weight||''} onChange={e=>setItem({...item,weight:Number(e.target.value)||undefined})}/></label></div>
       <MultiSelectDropdown labelText={t('occasions')} values={item.occasions} options={occasions} format={label} onChange={nextOccasions=>setItem({...item,occasions:nextOccasions})}/>

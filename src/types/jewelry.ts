@@ -11,6 +11,9 @@ export interface JewelryItem {
   series?: string;
   category: JewelryCategory;
   materials: JewelryMaterial[];
+  materialSource?: 'ai_visual' | 'official' | 'manual';
+  materialSourceUrl?: string;
+  materialDescription?: string;
   mainStone?: string;
   metalColor?: string;
   size?: string;
