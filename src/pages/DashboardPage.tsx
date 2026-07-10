@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/db';
 import { JewelryCard } from '../components/JewelryCard';
@@ -24,9 +24,9 @@ function localTimeLabel(date: Date) {
 
 export function DashboardPage(){
   const {t}=useI18n();
+  const [now,setNow]=useState(()=>new Date());
   const items = useLiveQuery(()=>db.jewelry.orderBy('createdAt').reverse().toArray(), []) || [];
   const wearEvents = useLiveQuery(()=>db.wearEvents.orderBy('wornDate').reverse().toArray(), []) || [];
-  const now = new Date();
   const currentMonth = monthKey(now);
   const totalValue = items.reduce((s,i)=>s+(i.referencePrice || i.purchasePrice || 0),0);
   const brandCount = new Set(items.map(i=>i.brand).filter(Boolean)).size;
@@ -40,6 +40,11 @@ export function DashboardPage(){
   }, [items]);
   const watches = items.filter(i=>i.category==='手表');
   const watchValue = watches.reduce((s,i)=>s+(i.purchasePrice||i.referencePrice||0),0);
+
+  useEffect(()=>{
+    const timer = window.setInterval(()=>setNow(new Date()), 60_000);
+    return ()=>window.clearInterval(timer);
+  },[]);
 
   return <section className="dashboard-page">
     <div className="hero dashboard-hero">
