@@ -3999,3 +3999,247 @@ nav a:hover {
   .detail-luxury { grid-template-columns: 1fr; }
   .passport-card { position: static; }
 }
+
+/* Absolute final layer: no gold, monochrome only */
+:root,
+:root[data-theme='gold'],
+:root[data-theme='silver'],
+:root[data-theme='rose'],
+:root[data-theme='candy'],
+:root[data-theme='lime'],
+:root[data-theme='sky'],
+:root[data-theme='coral'],
+:root[data-theme='lilac'] {
+  --app-bg: #ffffff !important;
+  --panel: #ffffff !important;
+  --panel-strong: #f6f6f6 !important;
+  --line: #111111 !important;
+  --line-soft: #d9d9d9 !important;
+  --text: #0f0f0f !important;
+  --muted: #666666 !important;
+  --accent: #111111 !important;
+  --accent-2: #111111 !important;
+  --accent-soft: #f2f2f2 !important;
+  --accent-ink: #111111 !important;
+  --metal-dark: #000000 !important;
+  --surface-glow: transparent !important;
+  --shadow: none !important;
+  --vault-bg: #ffffff !important;
+  --vault-paper: #ffffff !important;
+  --vault-line: #d9d9d9 !important;
+  --vault-line-dark: #111111 !important;
+  --vault-shadow: none !important;
+  --vault-soft-shadow: none !important;
+  --editorial-bg: #ffffff !important;
+  --editorial-ink: #0f0f0f !important;
+  --editorial-muted: #666666 !important;
+  --editorial-line: #d9d9d9 !important;
+  --editorial-soft: #f7f7f7 !important;
+  --editorial-black: #111111 !important;
+}
+
+body {
+  color: #0f0f0f !important;
+  background: #ffffff !important;
+}
+
+* {
+  border-radius: 0 !important;
+}
+
+body::before,
+.dashboard-hero::before,
+.dashboard-hero::after,
+.dashboard-stats div::after,
+.jewel-photo::after {
+  display: none !important;
+}
+
+.side,
+.top,
+.bottom-nav,
+.language-switch,
+.search,
+.hero,
+.dashboard-hero,
+.hero-action,
+.editorial-actions,
+.stats div,
+.dashboard-stats div,
+.watch-band,
+.panel,
+.jewel-card,
+.jewel-photo,
+.card-placeholder svg,
+.card-metrics span,
+.chips span,
+.pills button,
+.collection-toolbar,
+.advanced-filters,
+.filters,
+.form,
+.form-heading,
+.step-card,
+.ai-panel,
+.official-panel,
+.dropdown-field,
+.upload,
+.detail-card,
+.gallery img,
+.placeholder,
+.passport-card,
+.value-strip,
+.document-strip span,
+.empty,
+input,
+select,
+textarea,
+button,
+.ghost,
+.danger,
+.section-title button {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #111111 !important;
+  border-color: #d9d9d9 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.top-tip,
+.hero-copy,
+.primary,
+.language-switch button.on,
+.pills button.on,
+.side nav a.active,
+.side nav a:hover {
+  background: #111111 !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border-color: #111111 !important;
+  box-shadow: none !important;
+}
+
+.hero-copy {
+  border-right: 1px solid #111111 !important;
+}
+
+.dashboard-hero {
+  border-top: 1px solid #111111 !important;
+  border-bottom: 1px solid #111111 !important;
+}
+
+.top-tip span,
+.hero-copy p,
+.hero-kicker em {
+  color: rgba(255,255,255,.76) !important;
+}
+
+.hero-kicker span,
+.hero-insights span,
+.dashboard-hero h1 {
+  color: #ffffff !important;
+}
+
+.hero-insights span {
+  background: transparent !important;
+  border-color: rgba(255,255,255,.36) !important;
+}
+
+.brand strong,
+.brand span,
+.brand-mark svg,
+nav a svg,
+.stats svg,
+.detail-link,
+.card-title-row strong,
+.card-title-row span,
+.card-body p,
+.stats span,
+.stats small,
+.passport-list dt,
+.detail-kicker {
+  color: #111111 !important;
+  filter: none !important;
+}
+
+.card-title-row span,
+.card-body p,
+.stats span,
+.stats small,
+.passport-list dt,
+.detail-kicker {
+  color: #666666 !important;
+}
+
+.brand-mark,
+.primary,
+.editorial-actions a:hover,
+.ghost:hover,
+.section-title button:hover {
+  border-color: #111111 !important;
+}
+
+.brand-mark,
+[data-theme-option],
+.theme-options button,
+.theme-options button.on {
+  background: #ffffff !important;
+  background-image: none !important;
+  border-color: #111111 !important;
+  box-shadow: none !important;
+}
+
+[data-theme-option='gold'],
+[data-theme-option='silver'],
+[data-theme-option='rose'],
+[data-theme-option='candy'],
+[data-theme-option='lime'],
+[data-theme-option='sky'],
+[data-theme-option='coral'],
+[data-theme-option='lilac'] {
+  background: #ffffff !important;
+  background-image: none !important;
+}
+
+.theme-options button.on::after {
+  content: '';
+  display: block;
+  width: 42%;
+  height: 42%;
+  margin: 29%;
+  background: #111111;
+}
+
+.jewel-photo,
+.gallery img,
+.placeholder,
+.upload,
+.editorial-collage span {
+  background: #f7f7f7 !important;
+  background-image: none !important;
+}
+
+.editorial-collage span:nth-child(3),
+.editorial-collage span:nth-child(7) {
+  background: #111111 !important;
+  color: #ffffff !important;
+}
+
+.jewel-photo img,
+.gallery img,
+.editorial-collage img {
+  filter: grayscale(.12) contrast(1.04) !important;
+}
+
+.card-spark,
+.card-cover-meta {
+  display: none !important;
+}
+
+@media(max-width: 980px) {
+  .hero-copy {
+    border-right: 0 !important;
+    border-bottom: 1px solid #111111 !important;
+  }
+}
