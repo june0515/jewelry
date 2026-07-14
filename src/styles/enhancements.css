@@ -501,6 +501,274 @@ nav a:hover {
   .passport-card { position: static; }
 }
 
+/* Final monochrome squared luxury layer */
+:root,
+:root[data-theme='gold'],
+:root[data-theme='silver'],
+:root[data-theme='rose'],
+:root[data-theme='candy'],
+:root[data-theme='lime'],
+:root[data-theme='sky'],
+:root[data-theme='coral'],
+:root[data-theme='lilac'] {
+  --app-bg: #ffffff;
+  --panel: #ffffff;
+  --panel-strong: #f6f6f6;
+  --line: #111111;
+  --line-soft: #d9d9d9;
+  --text: #0f0f0f;
+  --muted: #666666;
+  --accent: #111111;
+  --accent-2: #111111;
+  --accent-soft: #f2f2f2;
+  --accent-ink: #111111;
+  --metal-dark: #000000;
+  --surface-glow: transparent;
+  --shadow: none;
+  --editorial-bg: #ffffff;
+  --editorial-ink: #0f0f0f;
+  --editorial-muted: #666666;
+  --editorial-line: #dcdcdc;
+  --editorial-soft: #f7f7f7;
+  --editorial-black: #171717;
+}
+
+* {
+  border-radius: 0 !important;
+}
+
+body {
+  color: #0f0f0f;
+  background: #ffffff !important;
+}
+
+body::before,
+.dashboard-hero::before,
+.dashboard-hero::after,
+.dashboard-stats div::after,
+.jewel-photo::after {
+  display: none !important;
+}
+
+.side,
+.top,
+.top-tip,
+.bottom-nav,
+.hero,
+.dashboard-hero,
+.hero-copy,
+.hero-action,
+.editorial-collage span,
+.editorial-actions,
+.editorial-actions a,
+.stats div,
+.dashboard-stats div,
+.watch-band,
+.panel,
+.jewel-card,
+.jewel-photo,
+.card-placeholder svg,
+.card-metrics span,
+.chips span,
+.pills button,
+.collection-toolbar,
+.advanced-filters,
+.filters,
+.form,
+.form-heading,
+.step-card,
+.ai-panel,
+.official-panel,
+.dropdown-field,
+.upload,
+.detail-card,
+.gallery img,
+.placeholder,
+.passport-card,
+.value-strip,
+.document-strip span,
+.empty,
+.search,
+.language-switch,
+.language-switch button,
+.theme-panel,
+input,
+select,
+textarea,
+button,
+.primary,
+.ghost,
+.danger {
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.top-tip,
+.hero-copy,
+.primary,
+.language-switch button.on,
+.side nav a.active,
+.side nav a:hover {
+  background: #111111 !important;
+  color: #ffffff !important;
+}
+
+.top-tip span,
+.hero-copy p,
+.hero-kicker em {
+  color: rgba(255,255,255,.76) !important;
+}
+
+.side,
+.top,
+.bottom-nav,
+.language-switch,
+.search,
+.editorial-actions a,
+.stats div,
+.dashboard-stats div,
+.watch-band,
+.panel,
+.jewel-photo,
+.card-placeholder svg,
+.card-metrics span,
+.chips span,
+.pills button,
+.collection-toolbar,
+.advanced-filters,
+.filters,
+.form,
+.form-heading,
+.step-card,
+.ai-panel,
+.official-panel,
+.dropdown-field,
+.upload,
+.detail-card,
+.gallery img,
+.placeholder,
+.passport-card,
+.value-strip,
+.document-strip span,
+.empty,
+input,
+select,
+textarea,
+.ghost,
+.danger,
+.section-title button {
+  border-color: #d9d9d9 !important;
+  background: #ffffff !important;
+  color: #111111 !important;
+}
+
+.brand-mark,
+.primary {
+  border: 1px solid #111111 !important;
+}
+
+.brand-mark {
+  background: #ffffff !important;
+}
+
+.brand-mark svg,
+nav a svg,
+.stats svg {
+  color: #111111 !important;
+  background: transparent !important;
+  filter: none !important;
+}
+
+.dashboard-hero {
+  background: #ffffff !important;
+  border-top: 1px solid #111111 !important;
+  border-bottom: 1px solid #111111 !important;
+}
+
+.hero-copy {
+  border-right: 1px solid #111111 !important;
+}
+
+.hero-kicker span,
+.hero-insights span {
+  color: #ffffff !important;
+  border-color: rgba(255,255,255,.36) !important;
+  background: transparent !important;
+}
+
+.editorial-collage span {
+  border-left: 1px solid #ffffff !important;
+  border-bottom: 1px solid #ffffff !important;
+  background: #f3f3f3 !important;
+}
+
+.editorial-collage span:nth-child(3),
+.editorial-collage span:nth-child(7) {
+  background: #111111 !important;
+  color: #ffffff !important;
+}
+
+.editorial-actions {
+  background: #ffffff !important;
+}
+
+.editorial-actions a:hover,
+.primary:hover,
+.ghost:hover,
+.section-title button:hover {
+  background: #ffffff !important;
+  color: #111111 !important;
+  border-color: #111111 !important;
+}
+
+.primary:hover {
+  background: #ffffff !important;
+}
+
+.jewel-card {
+  background: #ffffff !important;
+}
+
+.jewel-photo,
+.gallery img,
+.placeholder,
+.upload {
+  background: #f7f7f7 !important;
+}
+
+.jewel-photo img,
+.gallery img {
+  filter: grayscale(.08) contrast(1.03) !important;
+}
+
+.card-title-row span,
+.card-body p,
+.stats span,
+.stats small,
+.passport-list dt,
+.detail-kicker {
+  color: #666666 !important;
+}
+
+.pills button.on,
+.chips span.on {
+  background: #111111 !important;
+  color: #ffffff !important;
+  border-color: #111111 !important;
+}
+
+.bottom-nav a.active {
+  color: #000000 !important;
+  background: #eeeeee !important;
+}
+
+@media(max-width: 980px) {
+  .hero-copy {
+    border-right: 0 !important;
+    border-bottom: 1px solid #111111 !important;
+  }
+}
+
 /* Selfridges-inspired editorial commerce layer */
 :root {
   --editorial-bg: #ffffff;
