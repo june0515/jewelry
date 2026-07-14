@@ -4,7 +4,7 @@ import { db } from '../db/db';
 import { JewelryCard } from '../components/JewelryCard';
 import { exportJson } from '../utils/exportJson';
 import { daysSince } from '../utils/date';
-import { CalendarCheck, CircleDot, Diamond, DollarSign, Gem, Heart, Sparkles, Tags } from 'lucide-react';
+import { CalendarCheck, DollarSign, Gem, Heart, PlusCircle, Sparkles, Tags, Watch } from 'lucide-react';
 import { useI18n } from '../i18n';
 
 function monthKey(date: Date) {
@@ -40,6 +40,7 @@ export function DashboardPage(){
   }, [items]);
   const watches = items.filter(i=>i.category==='手表');
   const watchValue = watches.reduce((s,i)=>s+(i.purchasePrice||i.referencePrice||0),0);
+  const editorialTiles = items.slice(0, 8);
 
   useEffect(()=>{
     const timer = window.setInterval(()=>setNow(new Date()), 60_000);
@@ -59,14 +60,25 @@ export function DashboardPage(){
         </div>
       </div>
       <div className="hero-action">
-        <div className="jewel-visual" aria-hidden="true">
-          <span><Diamond size={22}/></span>
-          <span><CircleDot size={20}/></span>
-          <span><Sparkles size={18}/></span>
+        <div className="jewel-visual editorial-collage" aria-hidden="true">
+          {editorialTiles.length ? editorialTiles.map(item=><span key={item.id}>{item.photos[0] ? <img src={item.photos[0]} /> : <Sparkles size={22}/>}</span>) : <>
+            <span><Gem size={24}/></span>
+            <span><Heart size={24}/></span>
+            <span><Watch size={24}/></span>
+            <span><Sparkles size={24}/></span>
+          </>}
         </div>
         <div className="hero-jewel"><span>{todayPick?.brand || t('todayPick')}</span><strong>{todayPick?.name || t('emptyDashboard')}</strong></div>
         <a className="primary" href="/new">{t('addItem')}</a>
       </div>
+    </div>
+    <div className="editorial-actions">
+      <a href="/items">{t('allJewelry')}</a>
+      <a href="/new">{t('addJewelry')}</a>
+      <a href="/wear-history">{t('wearHistory')}</a>
+      <a href="/analytics">{t('analytics')}</a>
+      <a href="/wishlist">{t('wishlist')}</a>
+      <a href="/watches">{t('watches')}</a>
     </div>
     <div className="stats dashboard-stats">
       <div><Gem/><span>{t('totalCollection')}</span><strong>{items.length}</strong><small>{t('pieces')}</small></div>
