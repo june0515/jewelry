@@ -45,10 +45,10 @@ export function Layout(){
         <div><Palette size={16}/>{t('themeColor')}</div>
         <div className="theme-options">{themes.map(option=><button key={option.id} className={theme===option.id?'on':''} data-theme-option={option.id} onClick={()=>setTheme(option.id)} aria-label={t(option.label)} title={t(option.label)}/>)}</div>
       </div>
-      <div className="tip">{t('tipTitle')}<br/>{t('tipBody')}</div>
     </aside>
     <main className="main">
       <header className="top"><div className="search"><Search size={16}/>{t('searchPlaceholder')}</div></header>
+      <div className="top-tip"><strong>{t('tipTitle')}</strong><span>{t('tipBody')}</span></div>
       <Outlet />
     </main>
     <nav className="bottom-nav">

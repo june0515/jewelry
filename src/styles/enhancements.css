@@ -1248,6 +1248,67 @@ body::before {
   }
 }
 
+/* Aptos typography and non-blocking tip placement */
+:root {
+  font-family: Aptos, 'Aptos Display', 'Segoe UI', Arial, sans-serif;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: Aptos, 'Aptos Display', 'Segoe UI', Arial, sans-serif;
+}
+
+.brand strong,
+.dashboard-hero h1,
+.section-title h1,
+.section-title h2,
+.form-heading h1,
+.detail-card h1,
+.watch-hero h1,
+.stats strong,
+.card-title-row strong,
+.hero-jewel strong,
+.value-strip strong {
+  font-family: Aptos, 'Aptos Display', 'Segoe UI', Arial, sans-serif;
+  letter-spacing: 0;
+}
+
+.top-tip {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 9px 18px;
+  border-bottom: 1px solid var(--editorial-line);
+  background: var(--editorial-black);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.top-tip strong {
+  font-weight: 850;
+}
+
+.top-tip span {
+  color: rgba(255,255,255,.78);
+}
+
+@media(max-width: 980px) {
+  .top-tip {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 14px;
+    text-align: left;
+  }
+}
+
 :root[data-theme='rose'] {
   --app-bg: #fbf4f1;
   --panel-strong: #fff1eb;
