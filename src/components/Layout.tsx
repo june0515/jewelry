@@ -28,7 +28,7 @@ export function Layout(){
     <aside className="side">
       <div className="brand">
         <div className="brand-mark"><Sparkles size={24}/><CircleDot size={16}/></div>
-        <div><strong>Jewelry</strong><span>WARDROBE</span></div>
+        <div><strong>Bijou</strong><span>VAULT</span></div>
       </div>
       <div className="language-switch"><button className={language==='zh'?'on':''} onClick={()=>setLanguage('zh')}>中文</button><button className={language==='en'?'on':''} onClick={()=>setLanguage('en')}>English</button></div>
       <nav>

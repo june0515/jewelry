@@ -6,8 +6,8 @@
   --line-soft: #efe4d4;
   --text: #241f18;
   --muted: #766d61;
-  --accent: #b9852f;
-  --accent-2: #e2bc72;
+  --accent: #111111;
+  --accent-2: #111111;
   --accent-soft: #f4e6cc;
   --accent-ink: #7a4f14;
   --metal-dark: #6f4d18;
@@ -2281,7 +2281,7 @@ nav a:hover {
 }
 
 [data-theme-option='gold'] {
-  background: linear-gradient(135deg, #fae0a4, #b9852f);
+  background: #ffffff;
 }
 
 [data-theme-option='silver'] {
