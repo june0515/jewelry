@@ -151,7 +151,6 @@ export function FormPage(){
   const [enriching,setEnriching]=useState(false);
   const [officialError,setOfficialError]=useState('');
   const [officialResult,setOfficialResult]=useState<OfficialJewelryEnrichmentResult | null>(null);
-  const [autoRecognizedPhoto,setAutoRecognizedPhoto]=useState('');
   const [touchedSubmit,setTouchedSubmit]=useState(false);
 
   useEffect(()=>{ if(id) db.jewelry.get(id).then(v=>v&&setItem({...empty,...v})); },[id]);
@@ -173,14 +172,7 @@ export function FormPage(){
   }, [brandQuery, frequentBrands, showAllBrands]);
 
   const seriesOptions = useMemo(() => getBrandSeries(item.brand), [item.brand]);
-  const firstPhoto = item.photos[0] || '';
   const missingName = touchedSubmit && !item.name.trim();
-
-  useEffect(()=>{
-    if(id || !firstPhoto || autoRecognizedPhoto === firstPhoto) return;
-    setAutoRecognizedPhoto(firstPhoto);
-    runRecognition(firstPhoto);
-  },[autoRecognizedPhoto, firstPhoto, id]);
 
   async function submit(e:FormEvent){
     e.preventDefault();
@@ -222,7 +214,7 @@ export function FormPage(){
   function identify(mode: 'fast' | 'precise' = 'fast'){
     const photo = item.photos[0];
     if(photo) {
-      setAutoRecognizedPhoto(photo);
+      setPendingAiResult(null);
       runRecognition(photo, mode);
     }
   }
