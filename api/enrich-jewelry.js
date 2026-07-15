@@ -21,9 +21,18 @@ function getApiKey() {
   const rawKey = process.env.OPENAI_API_KEY;
   if (!rawKey) return '';
 
-  const compactKey = rawKey.trim().replace(/^["']|["']$/g, '').replace(/\s+/g, '');
-  const keyMatch = compactKey.match(/sk-[A-Za-z0-9_-]+/);
+  const compactKey = rawKey
+    .trim()
+    .replace(/^["']|["']$/g, '')
+    .replace(/[\s\u200B-\u200D\uFEFF]+/g, '');
+  const keyMatch = compactKey.match(/sk-(?:proj|svcacct|admin)?-?[A-Za-z0-9_-]{20,}/);
   return keyMatch ? keyMatch[0] : compactKey;
+}
+
+function describeKey(rawKey, apiKey) {
+  const cleaned = apiKey || '';
+  const preview = cleaned ? `${cleaned.slice(0, 8)}...${cleaned.slice(-4)}` : '(empty)';
+  return `当前 Vercel 读取到的 OPENAI_API_KEY 长度=${cleaned.length}，开头/结尾=${preview}。请确认变量名必须是 OPENAI_API_KEY，并且修改后重新 Deploy。`;
 }
 
 function getEnrichmentModelName() {
@@ -41,9 +50,15 @@ module.exports = async function handler(req, res) {
       return;
     }
 
+    const rawKey = process.env.OPENAI_API_KEY;
     const apiKey = getApiKey();
-    if (!apiKey || !/^sk-[A-Za-z0-9_-]+$/.test(apiKey)) {
-      sendError(res, 500, 'OPENAI_API_KEY 格式不正确：请只粘贴 sk-proj- 开头的 key，或重新创建一个新的 API key');
+    if (!apiKey) {
+      sendError(res, 500, '缺少 OPENAI_API_KEY，请先在 Vercel 的 Environment Variables 添加到 Production');
+      return;
+    }
+
+    if (!/^sk-[A-Za-z0-9_-]{20,}$/.test(apiKey)) {
+      sendError(res, 500, `OPENAI_API_KEY 格式不正确。${describeKey(rawKey, apiKey)}`);
       return;
     }
 
